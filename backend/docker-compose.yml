@@ -1,0 +1,82 @@
+services:
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: mobilealert
+      POSTGRES_USER: mobilealert
+      POSTGRES_PASSWORD: mobilealert
+    volumes:
+      - db-data:/var/lib/postgresql/data
+    ports:
+      # Opcional: solo para poder conectarse con un cliente SQL desde el
+      # host mientras se desarrolla. La API igual le pega por la red interna
+      # de compose (host "db"), no por este puerto.
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U mobilealert"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  api:
+    image: mcr.microsoft.com/dotnet/sdk:10.0
+    # Sin esto corre como root dentro del contenedor y ensucia obj/bin
+    # (montados desde el host) con archivos root-owned que después no se
+    # pueden ni borrar ni sobreescribir desde herramientas corridas como
+    # usuario normal — pasó una vez, no debería volver a pasar.
+    user: "1000:1000"
+    working_dir: /src
+    # dotnet watch: recompila y reinicia solo al guardar un cambio — mismo
+    # loop de "editás y se refleja" que Metro le da a la app. Para un build
+    # de producción de verdad hace falta un Dockerfile propio (multi-stage,
+    # imagen runtime en vez de sdk completo) — no existe todavía, esto es
+    # solo el entorno de desarrollo.
+    command: dotnet watch run --non-interactive --no-launch-profile
+    volumes:
+      - .:/src
+      # HOME real (bind mount a una carpeta del host, no un volume nombrado
+      # con solo un subpath) — con un volume apuntando a un subdirectorio
+      # nomás, Docker crea el padre como root al montar y "dotnet" no puede
+      # escribir ahí (pasó una vez: UnauthorizedAccessException en
+      # ~/.dotnet). Con un bind mount de la carpeta entera, el dueño es el
+      # mismo que el de esta carpeta en el host.
+      - ./.dotnet-home:/home/dotnetuser
+      # Clave de cuenta de servicio de Firebase — mismo archivo que ya usa
+      # mock-server/send-test-alert.js (ver su comentario de cabecera para
+      # cómo generarlo), montada acá de sólo lectura. Si el archivo no
+      # existe, FcmSender loguea un warning y las alertas se crean igual,
+      # solo que sin push real (ver Services/FcmSender.cs).
+      - ../mock-server/serviceAccountKey.json:/run/secrets/firebase-service-account.json:ro
+    ports:
+      - "5080:8080"
+    environment:
+      HOME: /home/dotnetuser
+      ASPNETCORE_ENVIRONMENT: Development
+      ASPNETCORE_URLS: http://0.0.0.0:8080
+      ConnectionStrings__Default: Host=db;Port=5432;Database=mobilealert;Username=mobilealert;Password=mobilealert
+    depends_on:
+      db:
+        condition: service_healthy
+
+  # IDE de SQL por terminal (harlequin.sh) apuntado a la misma Postgres, por
+  # la red interna de compose (host "db"). No es un servicio que quede
+  # arriba con `up`: se usa puntual, interactivo — `docker compose run --rm
+  # harlequin` desde backend/. `run` (no `up`) porque es un cliente que abre
+  # una TUI y se cierra, no algo que tenga que quedar corriendo en segundo
+  # plano.
+  harlequin:
+    build: ./tools/harlequin
+    stdin_open: true
+    tty: true
+    entrypoint:
+      - harlequin
+      - -a
+      - postgres
+      - postgresql://mobilealert:mobilealert@db:5432/mobilealert
+    depends_on:
+      db:
+        condition: service_healthy
+
+volumes:
+  db-data:

@@ -1,6 +1,16 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
 
     <uses-permission android:name="android.permission.INTERNET" />
+    <!-- Android 13+: sin este permiso no se puede mostrar NINGUNA notificación,
+         incluida la de alerta. Se pide en runtime (ver requestNotificationPermission). -->
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+    <!-- Deja que la notificación de alerta abra la Activity encima del lock screen. -->
+    <uses-permission android:name="android.permission.USE_FULL_SCREEN_INTENT" />
+    <uses-permission android:name="android.permission.WAKE_LOCK" />
+    <uses-permission android:name="android.permission.VIBRATE" />
+    <!-- Ubicación al momento de responder "Asistir"/"No asistir". -->
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
 
     <application
       android:name=".MainApplication"
