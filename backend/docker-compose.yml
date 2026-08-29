@@ -60,31 +60,11 @@ services:
       db:
         condition: service_healthy
 
-  # IDE de SQL por terminal (harlequin.sh) apuntado a la misma Postgres, por
-  # la red interna de compose (host "db"). No es un servicio que quede
-  # arriba con `up`: se usa puntual, interactivo — `docker compose run --rm
-  # harlequin` desde backend/. `run` (no `up`) porque es un cliente que abre
-  # una TUI y se cierra, no algo que tenga que quedar corriendo en segundo
-  # plano.
-  harlequin:
-    build: ./tools/harlequin
-    stdin_open: true
-    tty: true
-    entrypoint:
-      - harlequin
-      - -a
-      - postgres
-      - postgresql://mobilealert:mobilealert@db:5432/mobilealert
-    depends_on:
-      db:
-        condition: service_healthy
-
-  # Alternativa web a Harlequin — a diferencia de ese, este SÍ queda arriba
-  # con `up` (es una app web, no una TUI puntual). La conexión a "db" ya
-  # viene pre-cargada (tools/pgadmin/servers.json) así no hay que cargarla a
-  # mano cada vez que se recrea el contenedor — igual pide la contraseña de
-  # Postgres la primera vez que se abre esa conexión (mobilealert, ver
-  # README).
+  # Administración web de la Postgres de backend/, por la red interna de
+  # compose (host "db"). La conexión a "db" ya viene pre-cargada
+  # (tools/pgadmin/servers.json) así no hay que cargarla a mano cada vez
+  # que se recrea el contenedor — igual pide la contraseña de Postgres la
+  # primera vez que se abre esa conexión (mobilealert, ver README).
   pgadmin:
     image: dpage/pgadmin4
     restart: unless-stopped
