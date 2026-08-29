@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 400" role="img" aria-label="Diagrama de secuencia de respuesta a alerta: la aplicación envía la respuesta, Mobile Alert API la persiste, marca la alerta como respondida, y si la institución tiene webhook configurado notifica al backend del cuartel con una solicitud firmada.">
+  <style>
+    :root {
+      --bg: #FBF8F6;
+      --surface: #FFFFFF;
+      --surface-2: #F4EEEA;
+      --border: #E7DED8;
+      --text: #2A1E1B;
+      --text-muted: #7C6D64;
+      --accent: #AB2118;
+      --accent-soft: #F4DAD7;
+      --accent2: #1E3A6E;
+      --accent2-soft: #DCE3F0;
+      --infra: #64594F;
+      --infra-soft: #EAE3DA;
+    }
+    svg { color: var(--text); font-family: "Segoe UI", system-ui, -apple-system, sans-serif; }
+    text { fill: currentColor; }
+    .mono { font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace; }
+    .lifeline { stroke: currentColor; stroke-opacity: 0.28; stroke-width: 1.5; stroke-dasharray: 3 4; }
+    .msg-line { stroke: currentColor; stroke-width: 1.6; fill: none; }
+    .msg-line.dashed { stroke-dasharray: 6 4; }
+    .msg-label { font-size: 12.5px; }
+    .msg-label.mono { font-size: 11.5px; }
+    .box-label { font-size: 13px; font-weight: 600; }
+    .sub-label { font-size: 10.5px; fill: var(--text-muted); }
+    .frame { fill: none; stroke: currentColor; stroke-opacity: 0.4; stroke-width: 1.2; stroke-dasharray: 4 3; }
+    .frame-tag { font-size: 10.5px; font-weight: 600; letter-spacing: 0.03em; }
+  </style>
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="currentColor" />
+    </marker>
+  </defs>
+  <rect x="0.5" y="0.5" width="899" height="399" rx="14" fill="var(--surface)" stroke="var(--border)"/>
+
+        <g class="mono">
+          <rect x="20"  y="20" width="150" height="44" rx="9" fill="var(--surface-2)" stroke="currentColor" stroke-opacity="0.5"/>
+          <text x="95" y="47" text-anchor="middle" class="box-label">Aplicación móvil</text>
+
+          <rect x="355" y="20" width="170" height="44" rx="9" fill="var(--accent)" stroke="var(--accent)"/>
+          <text x="440" y="47" text-anchor="middle" class="box-label" fill="#fff">Mobile Alert API</text>
+
+          <rect x="605" y="20" width="80" height="44" rx="9" fill="var(--infra-soft)" stroke="var(--infra)"/>
+          <text x="645" y="47" text-anchor="middle" class="box-label" fill="var(--infra)">Datos</text>
+
+          <rect x="760" y="20" width="120" height="44" rx="9" fill="var(--accent2-soft)" stroke="var(--accent2)"/>
+          <text x="820" y="47" text-anchor="middle" class="box-label" fill="var(--accent2)">Backend del cuartel</text>
+        </g>
+
+        <line x1="95"  y1="64" x2="95"  y2="380" class="lifeline"/>
+        <line x1="440" y1="64" x2="440" y2="380" class="lifeline"/>
+        <line x1="645" y1="64" x2="645" y2="380" class="lifeline"/>
+        <line x1="820" y1="64" x2="820" y2="380" class="lifeline"/>
+
+        <line x1="95" y1="100" x2="434" y2="100" class="msg-line" marker-end="url(#arrow)"/>
+        <text x="265" y="92" text-anchor="middle" class="msg-label mono">POST .../response</text>
+
+        <line x1="440" y1="136" x2="639" y2="136" class="msg-line" marker-end="url(#arrow)"/>
+        <text x="540" y="128" text-anchor="middle" class="msg-label">registrar respuesta</text>
+
+        <line x1="440" y1="168" x2="639" y2="168" class="msg-line" marker-end="url(#arrow)"/>
+        <text x="540" y="160" text-anchor="middle" class="msg-label">marcar alerta como respondida</text>
+
+        <!-- alt frame -->
+        <rect x="60" y="196" width="790" height="110" class="frame"/>
+        <path d="M60,196 h64 v16 l-10,10 h-54 z" fill="var(--surface-2)" stroke="currentColor" stroke-opacity="0.4"/>
+        <text x="72" y="212" class="frame-tag">opt</text>
+        <text x="240" y="212" class="sub-label">institución con webhook configurado</text>
+
+        <line x1="440" y1="240" x2="814" y2="240" class="msg-line" marker-end="url(#arrow)"/>
+        <text x="627" y="232" text-anchor="middle" class="msg-label">notificación firmada de la respuesta</text>
+        <line x1="814" y1="272" x2="446" y2="272" class="msg-line dashed" marker-end="url(#arrow)"/>
+        <text x="627" y="264" text-anchor="middle" class="msg-label">confirmación de recepción</text>
+
+        <line x1="440" y1="340" x2="101" y2="340" class="msg-line dashed" marker-end="url(#arrow)"/>
+        <text x="265" y="332" text-anchor="middle" class="msg-label">confirmación</text>
+      
+</svg>

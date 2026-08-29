@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 700 230" role="img" aria-label="Diagrama de secuencia de registro de webhook: el backend del cuartel envía la URL de destino, Mobile Alert API guarda la suscripción con una clave de firma generada y la devuelve una única vez.">
+  <style>
+    :root {
+      --bg: #FBF8F6;
+      --surface: #FFFFFF;
+      --surface-2: #F4EEEA;
+      --border: #E7DED8;
+      --text: #2A1E1B;
+      --text-muted: #7C6D64;
+      --accent: #AB2118;
+      --accent-soft: #F4DAD7;
+      --accent2: #1E3A6E;
+      --accent2-soft: #DCE3F0;
+      --infra: #64594F;
+      --infra-soft: #EAE3DA;
+    }
+    svg { color: var(--text); font-family: "Segoe UI", system-ui, -apple-system, sans-serif; }
+    text { fill: currentColor; }
+    .mono { font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace; }
+    .lifeline { stroke: currentColor; stroke-opacity: 0.28; stroke-width: 1.5; stroke-dasharray: 3 4; }
+    .msg-line { stroke: currentColor; stroke-width: 1.6; fill: none; }
+    .msg-line.dashed { stroke-dasharray: 6 4; }
+    .msg-label { font-size: 12.5px; }
+    .msg-label.mono { font-size: 11.5px; }
+    .box-label { font-size: 13px; font-weight: 600; }
+    .sub-label { font-size: 10.5px; fill: var(--text-muted); }
+    .frame { fill: none; stroke: currentColor; stroke-opacity: 0.4; stroke-width: 1.2; stroke-dasharray: 4 3; }
+    .frame-tag { font-size: 10.5px; font-weight: 600; letter-spacing: 0.03em; }
+  </style>
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="currentColor" />
+    </marker>
+  </defs>
+  <rect x="0.5" y="0.5" width="699" height="229" rx="14" fill="var(--surface)" stroke="var(--border)"/>
+
+        <g class="mono">
+          <rect x="20"  y="20" width="150" height="44" rx="9" fill="var(--accent2-soft)" stroke="var(--accent2)"/>
+          <text x="95" y="47" text-anchor="middle" class="box-label" fill="var(--accent2)">Backend del cuartel</text>
+
+          <rect x="290" y="20" width="170" height="44" rx="9" fill="var(--accent)" stroke="var(--accent)"/>
+          <text x="375" y="47" text-anchor="middle" class="box-label" fill="#fff">Mobile Alert API</text>
+
+          <rect x="600" y="20" width="80" height="44" rx="9" fill="var(--infra-soft)" stroke="var(--infra)"/>
+          <text x="640" y="47" text-anchor="middle" class="box-label" fill="var(--infra)">Datos</text>
+        </g>
+
+        <line x1="95" y1="64" x2="95" y2="210" class="lifeline"/>
+        <line x1="375" y1="64" x2="375" y2="210" class="lifeline"/>
+        <line x1="640" y1="64" x2="640" y2="210" class="lifeline"/>
+
+        <line x1="95" y1="100" x2="369" y2="100" class="msg-line" marker-end="url(#arrow)"/>
+        <text x="232" y="92" text-anchor="middle" class="msg-label mono">POST /api/webhooks</text>
+
+        <line x1="375" y1="140" x2="634" y2="140" class="msg-line" marker-end="url(#arrow)"/>
+        <text x="507" y="132" text-anchor="middle" class="msg-label">guardar suscripción y clave de firma</text>
+
+        <line x1="375" y1="192" x2="101" y2="192" class="msg-line dashed" marker-end="url(#arrow)"/>
+        <text x="232" y="184" text-anchor="middle" class="msg-label">identificador, URL, clave de firma</text>
+      
+</svg>

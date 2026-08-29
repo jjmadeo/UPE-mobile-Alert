@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 580" role="img" aria-label="Diagrama de secuencia de creación y envío de alerta: el backend del cuartel envía la alerta; si el identificador de correlación ya fue procesado se devuelve la alerta existente sin reenviar; si es nueva, se resuelven destinatarios, se persiste y se envía por FCM a la aplicación; y un ciclo reintenta el envío hasta la primera respuesta o el máximo de reintentos.">
+  <style>
+    :root {
+      --bg: #FBF8F6;
+      --surface: #FFFFFF;
+      --surface-2: #F4EEEA;
+      --border: #E7DED8;
+      --text: #2A1E1B;
+      --text-muted: #7C6D64;
+      --accent: #AB2118;
+      --accent-soft: #F4DAD7;
+      --accent2: #1E3A6E;
+      --accent2-soft: #DCE3F0;
+      --infra: #64594F;
+      --infra-soft: #EAE3DA;
+    }
+    svg { color: var(--text); font-family: "Segoe UI", system-ui, -apple-system, sans-serif; }
+    text { fill: currentColor; }
+    .mono { font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace; }
+    .lifeline { stroke: currentColor; stroke-opacity: 0.28; stroke-width: 1.5; stroke-dasharray: 3 4; }
+    .msg-line { stroke: currentColor; stroke-width: 1.6; fill: none; }
+    .msg-line.dashed { stroke-dasharray: 6 4; }
+    .msg-label { font-size: 12.5px; }
+    .msg-label.mono { font-size: 11.5px; }
+    .box-label { font-size: 13px; font-weight: 600; }
+    .sub-label { font-size: 10.5px; fill: var(--text-muted); }
+    .frame { fill: none; stroke: currentColor; stroke-opacity: 0.4; stroke-width: 1.2; stroke-dasharray: 4 3; }
+    .frame-tag { font-size: 10.5px; font-weight: 600; letter-spacing: 0.03em; }
+  </style>
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="currentColor" />
+    </marker>
+  </defs>
+  <rect x="0.5" y="0.5" width="999" height="579" rx="14" fill="var(--surface)" stroke="var(--border)"/>
+
+        <g class="mono">
+          <rect x="20"  y="20" width="150" height="44" rx="9" fill="var(--accent2-soft)" stroke="var(--accent2)"/>
+          <text x="95" y="47" text-anchor="middle" class="box-label" fill="var(--accent2)">Backend del cuartel</text>
+
+          <rect x="330" y="20" width="170" height="44" rx="9" fill="var(--accent)" stroke="var(--accent)"/>
+          <text x="415" y="47" text-anchor="middle" class="box-label" fill="#fff">Mobile Alert API</text>
+
+          <rect x="600" y="20" width="80" height="44" rx="9" fill="var(--infra-soft)" stroke="var(--infra)"/>
+          <text x="640" y="47" text-anchor="middle" class="box-label" fill="var(--infra)">Datos</text>
+
+          <rect x="750" y="20" width="110" height="44" rx="9" fill="var(--infra-soft)" stroke="var(--infra)"/>
+          <text x="805" y="41" text-anchor="middle" class="box-label" fill="var(--infra)">Firebase</text>
+          <text x="805" y="55" text-anchor="middle" class="box-label" fill="var(--infra)">Cloud Msg.</text>
+
+          <rect x="920" y="20" width="60" height="44" rx="9" fill="var(--surface-2)" stroke="currentColor" stroke-opacity="0.5"/>
+          <text x="950" y="41" text-anchor="middle" class="box-label" font-size="11">App</text>
+          <text x="950" y="55" text-anchor="middle" class="box-label" font-size="11">móvil</text>
+        </g>
+
+        <line x1="95"  y1="64" x2="95"  y2="560" class="lifeline"/>
+        <line x1="415" y1="64" x2="415" y2="560" class="lifeline"/>
+        <line x1="640" y1="64" x2="640" y2="560" class="lifeline"/>
+        <line x1="805" y1="64" x2="805" y2="560" class="lifeline"/>
+        <line x1="950" y1="64" x2="950" y2="560" class="lifeline"/>
+
+        <line x1="95" y1="98" x2="409" y2="98" class="msg-line" marker-end="url(#arrow)"/>
+        <text x="252" y="90" text-anchor="middle" class="msg-label mono">POST /api/alerts</text>
+
+        <!-- alt frame: correlationId repetido vs. alerta nueva -->
+        <rect x="60" y="122" width="920" height="292" class="frame"/>
+        <path d="M60,122 h64 v16 l-10,10 h-54 z" fill="var(--surface-2)" stroke="currentColor" stroke-opacity="0.4"/>
+        <text x="72" y="138" class="frame-tag">alt</text>
+
+        <text x="290" y="150" class="sub-label">identificador de correlación ya procesado</text>
+        <line x1="415" y1="182" x2="101" y2="182" class="msg-line dashed" marker-end="url(#arrow)"/>
+        <text x="255" y="174" text-anchor="middle" class="msg-label">alerta existente (sin reenviar)</text>
+
+        <line x1="60" y1="204" x2="980" y2="204" class="frame" stroke-dasharray="4 3"/>
+        <text x="290" y="222" class="sub-label">alerta nueva</text>
+
+        <line x1="415" y1="252" x2="634" y2="252" class="msg-line" marker-end="url(#arrow)"/>
+        <text x="527" y="244" text-anchor="middle" class="msg-label">resolver destinatarios válidos</text>
+
+        <line x1="415" y1="286" x2="634" y2="286" class="msg-line" marker-end="url(#arrow)"/>
+        <text x="527" y="278" text-anchor="middle" class="msg-label">registrar alerta</text>
+
+        <line x1="415" y1="320" x2="799" y2="320" class="msg-line" marker-end="url(#arrow)"/>
+        <text x="607" y="312" text-anchor="middle" class="msg-label">enviar notificación (por destinatario)</text>
+
+        <line x1="805" y1="350" x2="944" y2="350" class="msg-line" marker-end="url(#arrow)"/>
+        <text x="877" y="342" text-anchor="middle" class="msg-label">notificación</text>
+
+        <line x1="415" y1="384" x2="101" y2="384" class="msg-line dashed" marker-end="url(#arrow)"/>
+        <text x="255" y="376" text-anchor="middle" class="msg-label">resultado: enviados, inválidos, sin dispositivo</text>
+
+        <!-- loop frame -->
+        <rect x="60" y="440" width="700" height="100" class="frame"/>
+        <path d="M60,440 h80 v16 l-10,10 h-70 z" fill="var(--surface-2)" stroke="currentColor" stroke-opacity="0.4"/>
+        <text x="72" y="456" class="frame-tag">loop</text>
+        <text x="220" y="456" class="sub-label">hasta la primera respuesta o el máximo de reintentos</text>
+
+        <line x1="415" y1="486" x2="634" y2="486" class="msg-line" marker-end="url(#arrow)"/>
+        <text x="527" y="478" text-anchor="middle" class="msg-label">consultar alertas pendientes</text>
+
+        <line x1="415" y1="516" x2="799" y2="516" class="msg-line" marker-end="url(#arrow)"/>
+        <text x="607" y="508" text-anchor="middle" class="msg-label">reenviar notificación</text>
+      
+</svg>

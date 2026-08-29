@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 330" role="img" aria-label="Backend del cuartel envía alertas a Mobile Alert API por API key; Mobile Alert reenvía por push a través de Firebase Cloud Messaging hacia la aplicación móvil, persiste en PostgreSQL, y recibe de vuelta la respuesta del bombero y la reenvía como webhook firmado al backend del cuartel.">
+  <style>
+    :root {
+      --bg: #FBF8F6;
+      --surface: #FFFFFF;
+      --surface-2: #F4EEEA;
+      --border: #E7DED8;
+      --text: #2A1E1B;
+      --text-muted: #7C6D64;
+      --accent: #AB2118;
+      --accent-soft: #F4DAD7;
+      --accent2: #1E3A6E;
+      --accent2-soft: #DCE3F0;
+      --infra: #64594F;
+      --infra-soft: #EAE3DA;
+    }
+    svg { color: var(--text); font-family: "Segoe UI", system-ui, -apple-system, sans-serif; }
+    text { fill: currentColor; }
+    .mono { font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace; }
+    .lifeline { stroke: currentColor; stroke-opacity: 0.28; stroke-width: 1.5; stroke-dasharray: 3 4; }
+    .msg-line { stroke: currentColor; stroke-width: 1.6; fill: none; }
+    .msg-line.dashed { stroke-dasharray: 6 4; }
+    .msg-label { font-size: 12.5px; }
+    .msg-label.mono { font-size: 11.5px; }
+    .box-label { font-size: 13px; font-weight: 600; }
+    .sub-label { font-size: 10.5px; fill: var(--text-muted); }
+    .frame { fill: none; stroke: currentColor; stroke-opacity: 0.4; stroke-width: 1.2; stroke-dasharray: 4 3; }
+    .frame-tag { font-size: 10.5px; font-weight: 600; letter-spacing: 0.03em; }
+  </style>
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="currentColor" />
+    </marker>
+  </defs>
+  <rect x="0.5" y="0.5" width="999" height="329" rx="14" fill="var(--surface)" stroke="var(--border)"/>
+
+
+        <!-- top row boxes -->
+        <g class="mono">
+          <rect x="40" y="40" width="190" height="64" rx="10" fill="var(--accent2-soft)" stroke="var(--accent2)" stroke-width="1.4"/>
+          <text x="135" y="66" text-anchor="middle" class="box-label" fill="var(--accent2)">Backend del</text>
+          <text x="135" y="82" text-anchor="middle" class="box-label" fill="var(--accent2)">cuartel</text>
+
+          <rect x="358" y="34" width="220" height="76" rx="10" fill="var(--accent)" stroke="var(--accent)" stroke-width="1.4"/>
+          <text x="468" y="65" text-anchor="middle" class="box-label" fill="#fff">Mobile Alert</text>
+          <text x="468" y="83" text-anchor="middle" class="box-label" fill="#fff">API</text>
+
+          <rect x="748" y="40" width="200" height="64" rx="10" fill="var(--infra-soft)" stroke="var(--infra)" stroke-width="1.4"/>
+          <text x="848" y="66" text-anchor="middle" class="box-label" fill="var(--infra)">Firebase Cloud</text>
+          <text x="848" y="82" text-anchor="middle" class="box-label" fill="var(--infra)">Messaging</text>
+        </g>
+
+        <!-- App box, second row right -->
+        <g class="mono">
+          <rect x="748" y="150" width="200" height="64" rx="10" fill="var(--surface-2)" stroke="currentColor" stroke-opacity="0.5" stroke-width="1.4"/>
+          <text x="848" y="176" text-anchor="middle" class="box-label">Aplicación</text>
+          <text x="848" y="192" text-anchor="middle" class="box-label">móvil</text>
+        </g>
+
+        <!-- DB box, below API -->
+        <g class="mono">
+          <rect x="378" y="150" width="180" height="56" rx="10" fill="var(--infra-soft)" stroke="var(--infra)" stroke-width="1.4"/>
+          <ellipse cx="468" cy="150" rx="90" ry="7" fill="var(--infra-soft)" stroke="var(--infra)" stroke-width="1.4"/>
+          <text x="468" y="184" text-anchor="middle" class="box-label" fill="var(--infra)">PostgreSQL</text>
+        </g>
+
+        <!-- top lane arrows -->
+        <line x1="230" y1="72" x2="352" y2="72" class="msg-line" marker-end="url(#arrow)" />
+        <text x="291" y="62" text-anchor="middle" class="msg-label mono">POST /api/alerts</text>
+
+        <line x1="578" y1="66" x2="742" y2="66" class="msg-line" marker-end="url(#arrow)" />
+        <text x="660" y="56" text-anchor="middle" class="msg-label">notificación push</text>
+
+        <line x1="848" y1="104" x2="848" y2="144" class="msg-line" marker-end="url(#arrow)" />
+
+        <!-- API <-> DB -->
+        <line x1="468" y1="110" x2="468" y2="144" class="msg-line" marker-end="url(#arrow)" />
+        <text x="454" y="132" text-anchor="end" class="msg-label" fill="var(--text-muted)">persiste</text>
+
+        <!-- return lane: App -> API (response) — x=568 a propósito, fuera
+             del rango horizontal de la caja de PostgreSQL (378–558), para
+             no cruzarla visualmente. -->
+        <path d="M 848 214 L 848 260 L 568 260 L 568 110" class="msg-line" fill="none" marker-end="url(#arrow)" />
+        <text x="708" y="252" text-anchor="middle" class="msg-label mono">POST .../response</text>
+
+        <!-- return lane: API -> Cuartel (webhook) — x=368, mismo motivo. -->
+        <path d="M 368 110 L 368 296 L 135 296 L 135 104" class="msg-line dashed" fill="none" marker-end="url(#arrow)" />
+        <text x="251" y="288" text-anchor="middle" class="msg-label">webhook firmado</text>
+
+        <!-- auth mode annotation -->
+        <text x="135" y="130" text-anchor="middle" class="sub-label">autenticación propia u opcionalmente delegada</text>
+      
+</svg>

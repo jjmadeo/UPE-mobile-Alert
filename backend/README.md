@@ -16,8 +16,7 @@ de las credenciales de los bomberos: puede delegar la autenticación al
 backend propio de la institución, o gestionarla localmente para
 instituciones de prueba.
 
-Diagrama de arquitectura:
-[Arquitectura y flujos](../docs/architecture.html#arquitectura).
+![Diagrama de arquitectura de Mobile Alert](../docs/diagrams/arquitectura.svg)
 
 Dos esquemas de autenticación conviven en la API:
 
@@ -28,8 +27,7 @@ Dos esquemas de autenticación conviven en la API:
 
 ## Casos de uso
 
-Diagrama de secuencia de cada caso de uso:
-[Arquitectura y flujos](../docs/architecture.html).
+Versión interactiva de todos los diagramas: [`docs/architecture.html`](../docs/architecture.html).
 
 ### Inicio de sesión
 
@@ -37,14 +35,16 @@ Diagrama de secuencia de cada caso de uso:
 delegada configurada, la contraseña se valida contra el backend propio del
 cuartel o localmente (BCrypt), y se devuelve un token JWT junto con los
 datos del bombero y la identidad de la institución.
-([Diagrama](../docs/architecture.html#login))
+
+![Diagrama de secuencia: inicio de sesión](../docs/diagrams/login.svg)
 
 ### Registro de dispositivo
 
 `POST /api/devices/register`. Un token de dispositivo previamente asociado
 a otro bombero es reasignado automáticamente, para cubrir el caso de un
 mismo dispositivo físico reutilizado por otra cuenta.
-([Diagrama](../docs/architecture.html#dispositivo))
+
+![Diagrama de secuencia: registro de dispositivo](../docs/diagrams/dispositivo.svg)
 
 ### Creación y envío de una alerta
 
@@ -55,7 +55,8 @@ detalle se informa en la respuesta. Un reenvío con el mismo identificador
 de correlación se resuelve como una repetición idempotente. El envío se
 reintenta automáticamente hasta la primera respuesta o el máximo de
 reintentos configurado.
-([Diagrama](../docs/architecture.html#alerta))
+
+![Diagrama de secuencia: creación y envío de una alerta](../docs/diagrams/alerta.svg)
 
 ### Respuesta a una alerta y notificación al cuartel
 
@@ -63,13 +64,15 @@ reintentos configurado.
 los reintentos de envío para el resto de los destinatarios de esa alerta.
 Si la institución tiene un webhook configurado, se notifica la respuesta
 al backend del cuartel mediante una solicitud firmada.
-([Diagrama](../docs/architecture.html#respuesta))
+
+![Diagrama de secuencia: respuesta a una alerta y notificación al cuartel](../docs/diagrams/respuesta.svg)
 
 ### Registro de webhook
 
 `POST /api/webhooks`. La clave de firma se devuelve una única vez, en la
 respuesta de este llamado.
-([Diagrama](../docs/architecture.html#webhook))
+
+![Diagrama de secuencia: registro de webhook](../docs/diagrams/webhook.svg)
 
 ## Ejecución local
 

@@ -12,6 +12,8 @@ de cada institución (cuartel) y los dispositivos de sus bomberos. No
 administra las credenciales de los bomberos por defecto; puede delegar la
 autenticación al backend propio de la institución.
 
+![Diagrama de arquitectura de Mobile Alert](docs/diagrams/arquitectura.svg)
+
 Diagrama de arquitectura y de secuencia de cada caso de uso:
 [Arquitectura y flujos](docs/architecture.html).
 

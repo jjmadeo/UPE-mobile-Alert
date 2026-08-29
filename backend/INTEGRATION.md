@@ -13,6 +13,8 @@ la notificación push y, cuando un bombero responde, notifica al sistema
 del cuartel mediante un webhook. No es necesario realizar consultas
 periódicas (polling).
 
+![Diagrama de arquitectura de Mobile Alert](../docs/diagrams/arquitectura.svg)
+
 Diagrama de arquitectura y de secuencia de cada caso de uso:
 [Arquitectura y flujos](../docs/architecture.html).
 
@@ -46,6 +48,8 @@ y debe correlacionar su propio identificador de empleado con el
 endpoint para consultar este mapeo de forma directa.
 
 ## 3. Envío de una alerta
+
+![Diagrama de secuencia: creación y envío de una alerta](../docs/diagrams/alerta.svg)
 
 ```bash
 curl -X POST http://<host>:5080/api/alerts \
@@ -109,6 +113,8 @@ reintentos configurado (30 por defecto).
 
 ## 4. Recepción de respuestas mediante webhook
 
+![Diagrama de secuencia: registro de webhook](../docs/diagrams/webhook.svg)
+
 ### Registro de la URL de destino
 
 ```bash
@@ -127,6 +133,8 @@ un mecanismo para recuperarlo posteriormente; en caso de pérdida, debe
 registrarse una nueva suscripción.
 
 ### Formato de la notificación
+
+![Diagrama de secuencia: respuesta a una alerta y notificación al cuartel](../docs/diagrams/respuesta.svg)
 
 Cada vez que un bombero de la institución responde una alerta, se envía:
 
