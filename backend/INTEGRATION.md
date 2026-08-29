@@ -62,10 +62,16 @@ obtienen del inicio de sesión de cada bombero en la aplicación móvil
 (`firefighter.id` en la respuesta de `POST /api/auth/login`).
 
 En instituciones con [autenticación delegada](#autenticación-delegada-opcional),
-el sistema del cuartel recibe las credenciales originales de cada bombero
-y debe correlacionar su propio identificador de empleado con el
-`firefighter.id` asignado por Mobile Alert. No existe actualmente un
-endpoint para consultar este mapeo de forma directa.
+Mobile Alert crea el bombero automáticamente en su primer login exitoso
+(no hace falta un alta previa): busca un bombero existente por
+`username` dentro de la institución y, si no lo encuentra, lo crea con
+el `name` que devolvió el sistema del cuartel. El `id` resultante es
+autogenerado por Mobile Alert, no proviene del sistema del cuartel — el
+campo `externalId` (ver más abajo) se acepta en la respuesta del login
+delegado pero **no se usa actualmente para correlacionar identidades**.
+No existe hoy un endpoint para consultar el mapeo `username → firefighter.id`;
+la referencia autorizada es la respuesta de `POST /api/auth/login` que
+recibe la propia aplicación móvil.
 
 ## 3. Envío de una alerta
 
@@ -227,20 +233,30 @@ contactar al equipo responsable del backend.
 
 Una institución puede configurarse para que sus bomberos continúen
 utilizando las credenciales de su propio sistema, en lugar de credenciales
-gestionadas por Mobile Alert. Esta configuración requiere coordinación con
-el equipo responsable del backend.
+gestionadas por Mobile Alert. Se activa seteando la columna
+`LoginBackendUrl` de la institución (no hay endpoint de administración
+todavía; ver [`README.md`](README.md#configuración-de-autenticación-delegada)
+para el `UPDATE` directo). Mientras esté vacía, se usa autenticación local.
 
 El endpoint de autenticación de la institución debe cumplir el siguiente
 contrato:
 
 - Recibir `POST { username, password }` con las credenciales originales
   del bombero. Por este motivo, la URL configurada debe utilizar HTTPS en
-  todo entorno de producción.
+  todo entorno de producción — la contraseña real del bombero pasa por
+  ahí, aunque Mobile Alert nunca la almacena.
 - Responder `200 { name: string, externalId?: string }` ante credenciales
   válidas, o cualquier otro código de estado en caso contrario.
+  `externalId` se acepta por contrato pero **Mobile Alert no lo persiste
+  ni lo usa hoy** para identificar al bombero (ver sección 2 más arriba);
+  queda reservado para una futura correlación explícita de identidades.
 
 Bajo esta configuración, Mobile Alert reenvía cada intento de inicio de
-sesión al endpoint de la institución sin almacenar contraseñas.
+sesión al endpoint de la institución sin almacenar contraseñas. Si las
+credenciales son válidas, el bombero se crea o actualiza localmente
+(`username` como clave dentro de la institución) para poder asociarle
+dispositivos y respuestas — ver la resolución de `firefighter.id` en la
+sección 2.
 
 ## Códigos de estado
 

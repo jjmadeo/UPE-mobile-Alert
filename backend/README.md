@@ -132,6 +132,20 @@ INSERT INTO "ApiKeys" ("KeyHash", "Name", "InstitutionId", "IsActive", "CreatedA
 VALUES ('<sha256-hex-de-la-clave>', 'Sistema de despacho — Institución X', <id-de-institucion>, true, now());
 ```
 
+### Configuración de autenticación delegada
+
+Tampoco existe un endpoint de administración para esto; se configura
+directamente sobre la columna `LoginBackendUrl` de `Institutions` (`NULL`
+por defecto, lo que deja la autenticación local activa):
+
+```sql
+UPDATE "Institutions" SET "LoginBackendUrl" = 'https://sistema-del-cuartel.example.com/login'
+WHERE "Code" = 'BOMBEROS-CENTRAL';
+```
+
+Ver el contrato completo que debe cumplir esa URL en
+[`INTEGRATION.md`](INTEGRATION.md#autenticación-delegada-opcional).
+
 ## Administración de la base de datos
 
 ```bash
