@@ -90,6 +90,15 @@ prueba. El servicio queda disponible en `http://localhost:5080`.
 curl http://localhost:5080/api/health
 ```
 
+El envío de push funciona sin configuración adicional: el repositorio
+incluye `mock-server/serviceAccountKey.json`, la cuenta de servicio de un
+proyecto de Firebase de prueba (plan Spark, sin facturación habilitada —
+sin costo posible aunque se filtre). Para producción, reemplazarla por la
+de un proyecto propio y sacarla del repo (ver comentario en `.gitignore`).
+Si el archivo llegara a faltar, el backend no rompe: `FcmSender` loguea un
+warning y las alertas se siguen creando, solo que sin push real (ver
+`Services/FcmSender.cs`).
+
 ### Documentación interactiva de la API
 
 `http://localhost:5080/scalar` — interfaz generada a partir del

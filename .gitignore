@@ -74,8 +74,11 @@ yarn-error.log
 !.yarn/sdks
 !.yarn/versions
 
-# Firebase — secretos que no van al repo
-mock-server/serviceAccountKey.json
+# mock-server/serviceAccountKey.json: cuenta de servicio de Firebase de
+# prueba, subida a propósito al repo para que el backend funcione "out of
+# the box" sin que cada dev tenga que generar la suya — ver
+# backend/README.md. Rotar/sacar del repo antes de usar un proyecto de
+# Firebase real.
 # Credenciales reales del proyecto de Firebase (API key, project_id) — cada
 # dev pone el suyo localmente para compilar Android (ver README para cómo
 # generarlo).
