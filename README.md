@@ -12,21 +12,8 @@ de cada institución (cuartel) y los dispositivos de sus bomberos. No
 administra las credenciales de los bomberos por defecto; puede delegar la
 autenticación al backend propio de la institución.
 
-```mermaid
-graph LR
-    Cuartel["Backend del cuartel"]
-    API["Mobile Alert API"]
-    DB[("PostgreSQL")]
-    FCM["Firebase Cloud Messaging"]
-    App["Aplicación móvil"]
-
-    Cuartel -- "POST /api/alerts (API key)" --> API
-    API -- push --> FCM
-    FCM --> App
-    App -- "POST .../response (JWT)" --> API
-    API -- "webhook (firmado)" --> Cuartel
-    API --- DB
-```
+Diagrama de arquitectura y de secuencia de cada caso de uso:
+[Arquitectura y flujos](https://claude.ai/code/artifact/bef31e9b-fd88-4e16-bb09-769653d95923).
 
 Documentación detallada del backend: [`backend/README.md`](backend/README.md).
 Guía de integración para el backend de una institución:

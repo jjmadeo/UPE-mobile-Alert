@@ -13,18 +13,8 @@ la notificación push y, cuando un bombero responde, notifica al sistema
 del cuartel mediante un webhook. No es necesario realizar consultas
 periódicas (polling).
 
-```mermaid
-graph LR
-    Cuartel["Backend del cuartel"]
-    API["Mobile Alert API"]
-    FCM["Firebase Cloud Messaging"]
-    App["Teléfono del bombero"]
-
-    Cuartel -- "POST /api/alerts (X-Api-Key)" --> API
-    API -- push --> FCM
-    FCM --> App
-    API -- "webhook (X-Signature)" --> Cuartel
-```
+Diagrama de arquitectura y de secuencia de cada caso de uso:
+[Arquitectura y flujos](https://claude.ai/code/artifact/bef31e9b-fd88-4e16-bb09-769653d95923).
 
 Documentación interactiva de la API, con posibilidad de ejecutar
 solicitudes desde el navegador: `http://<host>:5080/scalar` (documento

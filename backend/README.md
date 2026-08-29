@@ -16,21 +16,8 @@ de las credenciales de los bomberos: puede delegar la autenticación al
 backend propio de la institución, o gestionarla localmente para
 instituciones de prueba.
 
-```mermaid
-graph LR
-    Cuartel["Backend del cuartel"]
-    API["Mobile Alert API"]
-    DB[("PostgreSQL")]
-    FCM["Firebase Cloud Messaging"]
-    App["Aplicación móvil"]
-
-    Cuartel -- "POST /api/alerts (API key)" --> API
-    API -- push --> FCM
-    FCM --> App
-    App -- "POST .../response (JWT)" --> API
-    API -- "webhook (firmado)" --> Cuartel
-    API --- DB
-```
+Diagrama de arquitectura:
+[Arquitectura y flujos](https://claude.ai/code/artifact/bef31e9b-fd88-4e16-bb09-769653d95923#arquitectura).
 
 Dos esquemas de autenticación conviven en la API:
 
@@ -41,106 +28,48 @@ Dos esquemas de autenticación conviven en la API:
 
 ## Casos de uso
 
+Diagrama de secuencia de cada caso de uso:
+[Arquitectura y flujos](https://claude.ai/code/artifact/bef31e9b-fd88-4e16-bb09-769653d95923).
+
 ### Inicio de sesión
 
-```mermaid
-sequenceDiagram
-    participant App as Aplicación móvil
-    participant API as Mobile Alert API
-    participant Cuartel as Backend del cuartel (opcional)
-    participant DB as PostgreSQL
-
-    App->>API: POST /api/auth/login
-    API->>DB: Buscar institución
-    alt Institución con autenticación delegada
-        API->>Cuartel: Validar usuario y contraseña
-        Cuartel-->>API: Resultado de la validación
-        API->>DB: Crear o actualizar bombero (sin almacenar contraseña)
-    else Institución con autenticación local
-        API->>DB: Validar contraseña (BCrypt)
-    end
-    API-->>App: Token JWT, datos del bombero, identidad de la institución
-```
+`POST /api/auth/login`. Según la institución tenga o no autenticación
+delegada configurada, la contraseña se valida contra el backend propio del
+cuartel o localmente (BCrypt), y se devuelve un token JWT junto con los
+datos del bombero y la identidad de la institución.
+([Diagrama](https://claude.ai/code/artifact/bef31e9b-fd88-4e16-bb09-769653d95923#login))
 
 ### Registro de dispositivo
 
-```mermaid
-sequenceDiagram
-    participant App as Aplicación móvil
-    participant API as Mobile Alert API
-    participant DB as PostgreSQL
-
-    App->>API: POST /api/devices/register (token del dispositivo)
-    API->>DB: Reemplazar el/los tokens anteriores del bombero
-    API-->>App: Confirmación
-```
-
-Un token de dispositivo previamente asociado a otro bombero es reasignado
-automáticamente, para cubrir el caso de un mismo dispositivo físico
-reutilizado por otra cuenta.
+`POST /api/devices/register`. Un token de dispositivo previamente asociado
+a otro bombero es reasignado automáticamente, para cubrir el caso de un
+mismo dispositivo físico reutilizado por otra cuenta.
+([Diagrama](https://claude.ai/code/artifact/bef31e9b-fd88-4e16-bb09-769653d95923#dispositivo))
 
 ### Creación y envío de una alerta
 
-```mermaid
-sequenceDiagram
-    participant Cuartel as Backend del cuartel
-    participant API as Mobile Alert API
-    participant DB as PostgreSQL
-    participant FCM as Firebase Cloud Messaging
-    participant App as Aplicación móvil
-
-    Cuartel->>API: POST /api/alerts (identificador de correlación, destinatarios)
-    alt Identificador ya procesado
-        API-->>Cuartel: Alerta existente (sin reenviar)
-    else Alerta nueva
-        API->>DB: Resolver destinatarios válidos
-        API->>DB: Registrar la alerta
-        API->>FCM: Enviar notificación a cada destinatario
-        FCM->>App: Notificación
-        API-->>Cuartel: Resultado del envío
-    end
-    loop Hasta la primera respuesta o el máximo de reintentos
-        API->>DB: Consultar alertas pendientes
-        API->>FCM: Reenviar notificación
-    end
-```
-
-El envío se considera exitoso de forma parcial: si algunos destinatarios
-no son válidos o no tienen un dispositivo registrado, la alerta igual se
-envía a los destinatarios restantes y el detalle se informa en la
-respuesta.
+`POST /api/alerts`. El envío se considera exitoso de forma parcial: si
+algunos destinatarios no son válidos o no tienen un dispositivo
+registrado, la alerta igual se envía a los destinatarios restantes y el
+detalle se informa en la respuesta. Un reenvío con el mismo identificador
+de correlación se resuelve como una repetición idempotente. El envío se
+reintenta automáticamente hasta la primera respuesta o el máximo de
+reintentos configurado.
+([Diagrama](https://claude.ai/code/artifact/bef31e9b-fd88-4e16-bb09-769653d95923#alerta))
 
 ### Respuesta a una alerta y notificación al cuartel
 
-```mermaid
-sequenceDiagram
-    participant App as Aplicación móvil
-    participant API as Mobile Alert API
-    participant DB as PostgreSQL
-    participant Cuartel as Backend del cuartel
-
-    App->>API: POST /api/alerts/{id}/response
-    API->>DB: Registrar la respuesta
-    API->>DB: Marcar la alerta como respondida (se detienen los reintentos)
-    alt Institución con webhook configurado
-        API->>Cuartel: Notificación firmada de la respuesta
-        Cuartel-->>API: Confirmación de recepción
-    end
-    API-->>App: Confirmación
-```
+`POST /api/alerts/{id}/response`. La primera respuesta registrada detiene
+los reintentos de envío para el resto de los destinatarios de esa alerta.
+Si la institución tiene un webhook configurado, se notifica la respuesta
+al backend del cuartel mediante una solicitud firmada.
+([Diagrama](https://claude.ai/code/artifact/bef31e9b-fd88-4e16-bb09-769653d95923#respuesta))
 
 ### Registro de webhook
 
-```mermaid
-sequenceDiagram
-    participant Cuartel as Backend del cuartel
-    participant API as Mobile Alert API
-    participant DB as PostgreSQL
-
-    Cuartel->>API: POST /api/webhooks (URL de destino)
-    API->>DB: Registrar la suscripción con una clave de firma
-    API-->>Cuartel: Confirmación con la clave de firma (única vez)
-```
+`POST /api/webhooks`. La clave de firma se devuelve una única vez, en la
+respuesta de este llamado.
+([Diagrama](https://claude.ai/code/artifact/bef31e9b-fd88-4e16-bb09-769653d95923#webhook))
 
 ## Ejecución local
 
