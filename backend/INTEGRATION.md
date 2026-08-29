@@ -22,6 +22,26 @@ Documentación interactiva de la API, con posibilidad de ejecutar
 solicitudes desde el navegador: `http://<host>:5080/scalar` (documento
 OpenAPI en `/openapi/v1.json`).
 
+### Endpoints de esta integración
+
+| Método | Ruta | Autenticación | Uso |
+|---|---|---|---|
+| POST | `/api/alerts` | `X-Api-Key` | Disparar una alerta a bomberos puntuales |
+| POST | `/api/webhooks` | `X-Api-Key` | Registrar la URL propia que recibe las respuestas |
+
+Ningún otro endpoint del backend es parte del contrato de integración: el
+resto (login, registro de dispositivo, respuesta a una alerta) lo consume
+la aplicación móvil, no el sistema del cuartel.
+
+### Requisitos
+
+- `Content-Type: application/json` en toda solicitud con cuerpo.
+- HTTPS obligatorio en producción para la URL del webhook (paso 4) y para
+  el endpoint de autenticación delegada (opcional, ver más abajo); el
+  ejemplo con `http://<host>:5080` es solo para probar en red local.
+- No hay límite de tasa (*rate limit*) propio sobre estos endpoints
+  actualmente.
+
 ## 1. Obtención de una clave de API
 
 El registro de claves de API no está automatizado; debe coordinarse con el
@@ -194,11 +214,14 @@ debe rechazarse.
 
 ### Comportamiento ante fallas de entrega
 
-Si la URL de destino no responde, el intento queda registrado y no se
-reintenta automáticamente. La respuesta del bombero se conserva en Mobile
-Alert independientemente del resultado de la entrega del webhook;
-`GET /api/alerts/{id}/responses` permite su consulta manual como mecanismo
-de recuperación.
+Si la URL de destino no responde, el intento queda registrado y **no se
+reintenta automáticamente**. La respuesta del bombero se conserva en
+Mobile Alert independientemente del resultado de la entrega del webhook,
+pero no existe todavía un endpoint autenticado para que el cuartel la
+recupere manualmente en ese caso; el sistema receptor del webhook debe
+responder rápido y con un código `2xx` para minimizar la ventana de
+pérdida, y monitorear su propia disponibilidad. Ante una falla persistente,
+contactar al equipo responsable del backend.
 
 ## Autenticación delegada (opcional)
 
@@ -218,6 +241,18 @@ contrato:
 
 Bajo esta configuración, Mobile Alert reenvía cada intento de inicio de
 sesión al endpoint de la institución sin almacenar contraseñas.
+
+## Códigos de estado
+
+| Código | Endpoint | Significado |
+|---|---|---|
+| `200` | `POST /api/alerts` | Solicitud aceptada, incluso si algún destinatario quedó fuera (ver `unknownFirefighterIds` / `firefightersWithoutDevice`). |
+| `200` | `POST /api/webhooks` | Suscripción creada. |
+| `400` | `POST /api/alerts` | Solicitud mal formada (`correlationId` ausente, `firefighterIds` vacío, etc.), no una falla de entrega. |
+| `400` | `POST /api/webhooks` | `url` ausente o no es una URL `http(s)` absoluta. |
+| `401` | Cualquiera | Falta el header `X-Api-Key`, o la clave no es válida. |
+
+Todo error incluye un cuerpo `{ "message": "..." }` con el detalle.
 
 ## Aislamiento entre instituciones
 
