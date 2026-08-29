@@ -93,11 +93,16 @@ curl http://localhost:5080/api/health
 El envío de push funciona sin configuración adicional: el repositorio
 incluye `mock-server/serviceAccountKey.json`, la cuenta de servicio de un
 proyecto de Firebase de prueba (plan Spark, sin facturación habilitada —
-sin costo posible aunque se filtre). Para producción, reemplazarla por la
-de un proyecto propio y sacarla del repo (ver comentario en `.gitignore`).
-Si el archivo llegara a faltar, el backend no rompe: `FcmSender` loguea un
-warning y las alertas se siguen creando, solo que sin push real (ver
-`Services/FcmSender.cs`).
+sin costo posible aunque se filtre). Si el archivo llegara a faltar, el
+backend no rompe: `FcmSender` loguea un warning y las alertas se siguen
+creando, solo que sin push real (ver `Services/FcmSender.cs`).
+
+Para producción, generar una cuenta de servicio de un proyecto de Firebase
+propio (Firebase Console → ⚙️ Configuración del proyecto → Cuentas de
+servicio → "Generar nueva clave privada") y reemplazar el archivo. También
+hace falta el `google-services.json` de ese mismo proyecto para compilar
+el APK (`android/app/google-services.json`, no incluido en el repo — ver
+`.gitignore`).
 
 ### Documentación interactiva de la API
 
@@ -122,7 +127,6 @@ disponibles.
 | Institución | Usuario | Contraseña |
 |---|---|---|
 | BOMBEROS-CENTRAL | juan | 1234 |
-| BOMBEROS-NORTE | maria | 1234 |
 
 Clave de API de la institución BOMBEROS-CENTRAL (uso: encabezado
 `X-Api-Key`):
@@ -190,9 +194,14 @@ Entidades principales: `Institution`, `Firefighter`, `DeviceToken`,
 | POST | `/api/devices/register` | JWT | Aplicación móvil |
 | POST | `/api/alerts` | API key | Backend del cuartel |
 | POST | `/api/alerts/{id}/response` | JWT | Aplicación móvil |
-| GET | `/api/alerts/{id}/responses` | — | Uso interno |
+| GET | `/api/alerts/{id}/responses` | — ⚠️ | Debug |
 | POST | `/api/webhooks` | API key | Backend del cuartel |
 | GET | `/api/health` | — | — |
+
+⚠️ `GET /api/alerts/{id}/responses` no filtra por institución — cualquiera
+con un `alertId` puede consultar sus respuestas, sin autenticación. Es
+solo para debug manual (ver comentario en `AlertsEndpoints.cs`); no está
+pensado como endpoint soportado, ni para el cuartel ni para la app.
 
 ## Tests
 
@@ -229,3 +238,7 @@ docker run --rm \
   pensada para producción; requiere una imagen de runtime independiente.
 - La entrega de webhooks no se reintenta ante fallos; el resultado del
   intento queda registrado para auditoría.
+- `GET /api/alerts/{id}/responses` es de debug: sin autenticación y sin
+  aislamiento entre instituciones. No hay hoy un mecanismo soportado para
+  que un cuartel recupere respuestas manualmente si falla la entrega del
+  webhook.

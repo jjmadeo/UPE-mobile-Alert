@@ -7,9 +7,7 @@
     "ios": "react-native run-ios",
     "lint": "eslint .",
     "start": "react-native start",
-    "test": "jest",
-    "mock-server": "npm --prefix mock-server run start",
-    "send-test-alert": "node mock-server/send-test-alert.js"
+    "test": "jest"
   },
   "dependencies": {
     "react": "19.2.3",

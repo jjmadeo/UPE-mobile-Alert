@@ -9,6 +9,7 @@ using System.Text.Json.Nodes;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using MobileAlert.Api.Data;
+using MobileAlert.Api.Domain;
 using MobileAlert.Api.Dtos;
 using Xunit;
 
@@ -61,6 +62,35 @@ public class CriticalFlowsTests(ApiFactory factory) : IClassFixture<ApiFactory>
         return (int.Parse(login.Firefighter.Id), client);
     }
 
+    /// <summary>Bombero descartable dentro de BOMBEROS-CENTRAL (username
+    /// random), para tests que necesitan un firefighterId propio sin pisar
+    /// las filas de juan usadas por el resto de esta clase (comparten una
+    /// sola Postgres, ver el comentario de la clase). Antes se usaba
+    /// maria/BOMBEROS-NORTE para esto — la institución de prueba se sacó
+    /// del seed (ver DbSeeder), así que ahora se crea acá.</summary>
+    private async Task<(int FirefighterId, HttpClient Client)> LoginAsScratchFirefighterAsync()
+    {
+        var username = $"scratch-{Guid.NewGuid():N}"[..20];
+        using (var scope = factory.Services.CreateScope())
+        {
+            var db = GetDb(scope);
+            var institutionId = await db.Institutions
+                .Where(i => i.Code == "BOMBEROS-CENTRAL")
+                .Select(i => i.Id)
+                .SingleAsync();
+            db.Firefighters.Add(new Firefighter
+            {
+                Name = "Bombero de prueba",
+                Username = username,
+                PasswordHash = BCrypt.Net.BCrypt.HashPassword("1234"),
+                InstitutionId = institutionId,
+            });
+            await db.SaveChangesAsync();
+        }
+
+        return await LoginAsync(username);
+    }
+
     private async Task<string> RegisterDeviceAsync(HttpClient appClient)
     {
         var fcmToken = $"fake-fcm-token-{Guid.NewGuid()}";
@@ -80,11 +110,7 @@ public class CriticalFlowsTests(ApiFactory factory) : IClassFixture<ApiFactory>
     [Fact]
     public async Task Login_ThenRegisterDevice_PersistsToken()
     {
-        // maria/BOMBEROS-NORTE, no juan — para no compartir DeviceTokens
-        // con el resto de los tests de esta clase (comparten una sola
-        // Postgres, ver el comentario de la clase) y poder contar filas sin
-        // ambigüedad.
-        var (firefighterId, appClient) = await LoginAsync("maria", institutionCode: "BOMBEROS-NORTE");
+        var (firefighterId, appClient) = await LoginAsScratchFirefighterAsync();
         var fcmToken = await RegisterDeviceAsync(appClient);
 
         using var scope = factory.Services.CreateScope();
@@ -95,8 +121,7 @@ public class CriticalFlowsTests(ApiFactory factory) : IClassFixture<ApiFactory>
     [Fact]
     public async Task RegisteringNewDevice_ReplacesPreviousToken()
     {
-        // Mismo motivo que el test anterior para usar maria y no juan.
-        var (firefighterId, appClient) = await LoginAsync("maria", institutionCode: "BOMBEROS-NORTE");
+        var (firefighterId, appClient) = await LoginAsScratchFirefighterAsync();
 
         // El bombero instala la app en un teléfono, después en otro (o
         // reinstala en el mismo) — FCM le da un token nuevo cada vez.
@@ -126,7 +151,7 @@ public class CriticalFlowsTests(ApiFactory factory) : IClassFixture<ApiFactory>
         var correlationId = Guid.NewGuid();
 
         // Act: el backend del cuartel dispara la alerta, autenticado con su
-        // API key — mismo request que backend/scripts/send-test-alert.js.
+        // API key — mismo request que backend/scripts/send-alert.sh.
         var request = new CreateAlertRequestDto(
             correlationId, "Incendio estructural", "Se solicita apoyo urgente",
             "Av. Siempre Viva 742", -32.89, -68.84, [firefighterId]);

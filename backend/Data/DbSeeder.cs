@@ -31,30 +31,15 @@ public static class DbSeeder
             Name = "Bomberos Voluntarios Central",
             PrimaryColor = "#1E3A8A",
         };
-        var norte = new Institution
-        {
-            Code = "BOMBEROS-NORTE",
-            Name = "Bomberos Voluntarios Zona Norte",
-            PrimaryColor = "#B45309",
-        };
-        db.Institutions.AddRange(central, norte);
+        db.Institutions.Add(central);
 
-        db.Firefighters.AddRange(
-            new Firefighter
-            {
-                Name = "Juan Pérez",
-                Username = "juan",
-                PasswordHash = BCrypt.Net.BCrypt.HashPassword("1234"),
-                Institution = central,
-            },
-            new Firefighter
-            {
-                Name = "María Gómez",
-                Username = "maria",
-                PasswordHash = BCrypt.Net.BCrypt.HashPassword("1234"),
-                Institution = norte,
-            }
-        );
+        db.Firefighters.Add(new Firefighter
+        {
+            Name = "Juan Pérez",
+            Username = "juan",
+            PasswordHash = BCrypt.Net.BCrypt.HashPassword("1234"),
+            Institution = central,
+        });
 
         db.ApiKeys.Add(new ApiKeyRecord
         {

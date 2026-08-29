@@ -80,6 +80,6 @@ yarn-error.log
 # backend/README.md. Rotar/sacar del repo antes de usar un proyecto de
 # Firebase real.
 # Credenciales reales del proyecto de Firebase (API key, project_id) — cada
-# dev pone el suyo localmente para compilar Android (ver README para cómo
-# generarlo).
+# dev pone el suyo localmente para compilar Android (ver sección
+# "Desarrollo" en el README raíz para cómo generarlo).
 android/app/google-services.json

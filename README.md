@@ -72,7 +72,6 @@ Credenciales de prueba, generadas automáticamente al levantar el backend:
 | Institución | Usuario | Contraseña |
 |---|---|---|
 | BOMBEROS-CENTRAL | juan | 1234 |
-| BOMBEROS-NORTE | maria | 1234 |
 
 Al iniciar sesión, la aplicación solicita permiso de notificaciones y
 registra el dispositivo contra el backend.
@@ -111,6 +110,8 @@ Interfaz disponible en `http://localhost:5050` (credenciales y detalle en
 | `backend/` | Backend (C# / .NET, PostgreSQL) |
 | `backend/scripts/` | Utilitarios para disparar alertas de prueba |
 | `backend/Tests/` | Tests de integración y unitarios |
+| `docs/` | Diagramas de arquitectura y flujos (HTML + SVG) |
+| `mock-server/` | Cuenta de servicio de Firebase de prueba, usada por el backend |
 
 ## Tecnologías
 
@@ -126,7 +127,12 @@ Interfaz disponible en `http://localhost:5050` (credenciales y detalle en
 ## Desarrollo
 
 Para modificar el código de la aplicación (no solo instalar el APK
-distribuido):
+distribuido) hace falta además `android/app/google-services.json`, del
+mismo proyecto de Firebase que la cuenta de servicio del backend (ver
+"Ejecución local" en [`backend/README.md`](backend/README.md)) — se
+descarga desde Firebase Console → ⚙️ Configuración del proyecto →
+Configuración general → app Android. No está incluido en el repo (ver
+`.gitignore`).
 
 ```bash
 npm install

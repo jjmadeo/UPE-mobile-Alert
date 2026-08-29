@@ -1,10 +1,10 @@
 #!/usr/bin/env bash
 #
 # Dispara una alerta real contra el backend (POST /api/alerts), simulando al
-# backend PROPIO de un cuartel — mismo rol que send-test-alert.js, pero sin
-# depender de Node (solo curl, que ya viene en casi cualquier Linux/Mac/WSL).
-# Pensado para poder probar la app sin instalar nada más que Docker + este
-# script.
+# backend PROPIO de un cuartel — sin depender de Node, solo curl (que ya
+# viene en casi cualquier Linux/Mac/WSL). Pensado para poder probar la app
+# sin instalar nada más que Docker + este script. Equivalente en PowerShell:
+# send-alert.ps1.
 #
 # Requiere: backend/ corriendo (`docker compose up -d` en backend/) y la app
 # logueada al menos una vez contra ESE backend (para que el device token

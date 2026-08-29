@@ -42,9 +42,10 @@ services:
       # ~/.dotnet). Con un bind mount de la carpeta entera, el dueño es el
       # mismo que el de esta carpeta en el host.
       - ./.dotnet-home:/home/dotnetuser
-      # Clave de cuenta de servicio de Firebase — mismo archivo que ya usa
-      # mock-server/send-test-alert.js (ver su comentario de cabecera para
-      # cómo generarlo), montada acá de sólo lectura. Si el archivo no
+      # Clave de cuenta de servicio de Firebase, montada acá de sólo
+      # lectura. El repo incluye una de un proyecto de prueba (ver
+      # README, sección "Ejecución local") — para producción, reemplazar
+      # este archivo por el de un proyecto propio. Si el archivo no
       # existe, FcmSender loguea un warning y las alertas se crean igual,
       # solo que sin push real (ver Services/FcmSender.cs).
       - ../mock-server/serviceAccountKey.json:/run/secrets/firebase-service-account.json:ro
