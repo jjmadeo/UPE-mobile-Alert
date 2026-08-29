@@ -6,6 +6,15 @@
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
     <!-- Deja que la notificación de alerta abra la Activity encima del lock screen. -->
     <uses-permission android:name="android.permission.USE_FULL_SCREEN_INTENT" />
+    <!-- Mostrar la alerta como foreground service (notifee asForegroundService,
+         ver displayAlertNotification.ts): mantiene el proceso vivo con
+         prioridad elevada durante los primeros minutos tras recibir el push,
+         justo la ventana en la que algunos fabricantes (Samsung entre otros)
+         matan el proceso antes de que el fullScreenAction llegue a
+         dispararse — ver historial de pruebas con push que llegaban tarde o
+         nunca. El tipo (shortService) ya viene declarado por notifee-core en
+         su propio manifest, no hace falta declararlo acá. -->
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
     <uses-permission android:name="android.permission.WAKE_LOCK" />
     <uses-permission android:name="android.permission.VIBRATE" />
     <!-- Ubicación al momento de responder "Asistir"/"No asistir". -->

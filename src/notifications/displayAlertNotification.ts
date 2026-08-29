@@ -1,5 +1,6 @@
 import notifee, {
   AndroidCategory,
+  AndroidForegroundServiceType,
   AndroidImportance,
 } from '@notifee/react-native';
 import { ensureAlertChannel } from './channel';
@@ -13,6 +14,16 @@ import { colors } from '../theme';
  * sobre el lock screen (fullScreenAction). Se usa tanto desde el handler de
  * foreground como el de background/killed — el comportamiento tiene que ser
  * idéntico en los tres estados.
+ *
+ * `asForegroundService: true` (Android): además de mostrarla, arranca un
+ * foreground service — mantiene el proceso vivo con prioridad elevada
+ * durante los primeros minutos, que es la ventana en la que algunos
+ * fabricantes (confirmado con Samsung) matan el proceso antes de que el
+ * fullScreenAction llegue a dispararse, aunque la app tenga la batería sin
+ * restricciones. El tipo lo fuerza notifee-core a `shortService`
+ * (foregroundServiceTypes acá solo tiene que coincidir con eso), así que
+ * Android lo corta solo pasado un rato — por eso igual hace falta
+ * `cancelAlertNotification` para pararlo apenas el bombero responde.
  */
 export async function displayAlertNotification(
   alert: AlertPayload,
@@ -45,6 +56,8 @@ export async function displayAlertNotification(
       ongoing: true,
       loopSound: true,
       showTimestamp: true,
+      asForegroundService: true,
+      foregroundServiceTypes: [AndroidForegroundServiceType.FOREGROUND_SERVICE_TYPE_SHORT_SERVICE],
       pressAction: { id: 'default', launchActivity: 'default' },
       fullScreenAction: { id: 'default', launchActivity: 'default' },
     },
@@ -52,7 +65,11 @@ export async function displayAlertNotification(
 }
 
 /** Se llama una vez que el bombero respondió, para sacar la notificación
- * "en curso" de la bandeja (dejó de estar ongoing/loop). */
+ * "en curso" de la bandeja (dejó de estar ongoing/loop) y frenar el
+ * foreground service que arrancó displayAlertNotification — si no se
+ * detiene acá, igual lo corta Android solo al rato (shortService), pero no
+ * tiene sentido dejarlo corriendo de más una vez que ya se respondió. */
 export async function cancelAlertNotification(alertId: string): Promise<void> {
   await notifee.cancelNotification(alertId);
+  await notifee.stopForegroundService();
 }
