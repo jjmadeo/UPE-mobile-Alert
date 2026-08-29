@@ -19,6 +19,14 @@ public static class AuthEndpoints
                 return Results.Json(new { message = ex.Message }, statusCode: StatusCodes.Status401Unauthorized);
             }
         })
-        .WithName("Login");
+        .WithName("Login")
+        .WithSummary("Login de un bombero")
+        .WithDescription(
+            "Lo llama la APP MOBILE, no el backend del cuartel. Valida usuario/institución " +
+            "y devuelve un JWT (usarlo como Bearer en el resto de los endpoints de bombero) " +
+            "más el branding de la institución. Si la institución tiene LoginBackendUrl " +
+            "configurado, la contraseña se reenvía tal cual a ese sistema propio; si no, se " +
+            "valida localmente (BCrypt).")
+        .WithTags("Bombero (app mobile)");
     }
 }

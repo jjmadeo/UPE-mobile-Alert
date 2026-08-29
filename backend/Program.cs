@@ -6,6 +6,7 @@ using Microsoft.IdentityModel.Tokens;
 using MobileAlert.Api.Data;
 using MobileAlert.Api.Endpoints;
 using MobileAlert.Api.Services;
+using Scalar.AspNetCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -96,13 +97,24 @@ using (var scope = app.Services.CreateScope())
 if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();
+    // UI navegable del spec — pensada sobre todo para el backend de un
+    // cuartel que se quiere integrar (ver backend/README.md, sección
+    // "Integración"): entrando a /scalar puede probar los endpoints sin
+    // necesidad de Postman ni nada instalado.
+    app.MapScalarApiReference(options =>
+    {
+        options.Title = "Mobile Alert API";
+    });
 }
 
 app.UseCors();
 app.UseAuthentication();
 app.UseAuthorization();
 
-app.MapGet("/api/health", () => Results.Ok(new { ok = true }));
+app.MapGet("/api/health", () => Results.Ok(new { ok = true }))
+    .WithName("Health")
+    .WithSummary("Chequeo de salud")
+    .WithTags("Debug");
 app.MapAuthEndpoints();
 app.MapDevicesEndpoints();
 app.MapAlertsEndpoints();

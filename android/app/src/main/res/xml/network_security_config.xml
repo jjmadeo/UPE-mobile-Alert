@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Permite tráfico HTTP plano (sin TLS) para TODA la app, en cualquier build
+  type — a propósito, no es un descuido.
+
+  El backend de esta app corre self-hosted en la red local de quien lo
+  levanta (`docker compose up -d` en backend/, ver README de la raíz) sin
+  certificado — no tiene sentido pedir HTTPS para eso. El plugin de Gradle
+  de React Native fuerza `usesCleartextTraffic=false` en builds de release
+  (buena práctica general, pensada para apps que sí hablan con backends en
+  internet) — este archivo lo pisa a propósito: un Network Security Config
+  explícito con su propio <base-config> gana por sobre el atributo
+  `android:usesCleartextTraffic` del manifest, sea cual sea su valor.
+
+  Si en algún momento el backend pasa a tener TLS de verdad (dominio propio
+  + certificado), este archivo debería borrarse — volver al default de
+  Android (cleartext bloqueado en release) es lo correcto en ese momento.
+-->
+<network-security-config>
+    <base-config cleartextTrafficPermitted="true" />
+</network-security-config>

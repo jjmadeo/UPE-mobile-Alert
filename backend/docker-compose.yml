@@ -78,5 +78,32 @@ services:
       db:
         condition: service_healthy
 
+  # Alternativa web a Harlequin — a diferencia de ese, este SÍ queda arriba
+  # con `up` (es una app web, no una TUI puntual). La conexión a "db" ya
+  # viene pre-cargada (tools/pgadmin/servers.json) así no hay que cargarla a
+  # mano cada vez que se recrea el contenedor — igual pide la contraseña de
+  # Postgres la primera vez que se abre esa conexión (mobilealert, ver
+  # README).
+  pgadmin:
+    image: dpage/pgadmin4
+    restart: unless-stopped
+    environment:
+      # No puede ser .local/.test/.example (dominios reservados por RFC 2606
+      # — pgAdmin los rechaza aunque CHECK_EMAIL_DELIVERABILITY esté
+      # apagado, entró en crash loop con "dev@mobilealert.local").
+      PGADMIN_DEFAULT_EMAIL: dev@mobilealert.com
+      PGADMIN_DEFAULT_PASSWORD: mobilealert
+      # Sin esto, además del login de arriba pide crear una "master
+      # password" para el guardado cifrado de contraseñas — de más para un
+      # entorno de dev descartable.
+      PGADMIN_CONFIG_MASTER_PASSWORD_REQUIRED: "False"
+    ports:
+      - "5050:80"
+    volumes:
+      - ./tools/pgadmin/servers.json:/pgadmin4/servers.json:ro
+    depends_on:
+      db:
+        condition: service_healthy
+
 volumes:
   db-data:

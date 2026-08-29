@@ -11,6 +11,7 @@ import {
 } from 'react-native';
 import { login } from '../api/authApi';
 import { useAuthStore } from '../state/authStore';
+import { useServerConfigStore } from '../state/serverConfigStore';
 import {
   requestNotificationPermission,
   syncFcmTokenWithBackend,
@@ -21,6 +22,9 @@ export function LoginScreen() {
   const theme = useTheme();
   const styles = useMemo(() => createStyles(theme), [theme]);
   const setSession = useAuthStore(s => s.setSession);
+  const serverUrl = useServerConfigStore(s => s.serverUrl);
+  const setServerUrl = useServerConfigStore(s => s.setServerUrl);
+  const [showServerConfig, setShowServerConfig] = useState(false);
   const [institutionCode, setInstitutionCode] = useState('');
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
@@ -62,6 +66,32 @@ export function LoginScreen() {
     >
       <Text style={styles.title}>Mobile Alert</Text>
       <Text style={styles.subtitle}>Alertas para bomberos</Text>
+
+      {/* Colapsado por default — la mayoría de las veces ya está bien
+          configurado (viene de un login anterior, o del valor de fábrica en
+          MOCK_BACKEND_URL). Solo hace falta tocarlo la primera vez que se
+          instala este mismo APK en una red distinta — ver
+          serverConfigStore.ts. */}
+      <TouchableOpacity
+        onPress={() => setShowServerConfig(v => !v)}
+        style={styles.serverToggle}
+      >
+        <Text style={styles.serverToggleLabel} numberOfLines={1}>
+          {showServerConfig ? 'Ocultar' : 'Servidor'}: {serverUrl}
+        </Text>
+      </TouchableOpacity>
+      {showServerConfig ? (
+        <TextInput
+          style={styles.serverInput}
+          value={serverUrl}
+          onChangeText={setServerUrl}
+          placeholder="http://192.168.0.10:5080"
+          placeholderTextColor={theme.textMuted}
+          autoCapitalize="none"
+          autoCorrect={false}
+          keyboardType="url"
+        />
+      ) : null}
 
       <View style={styles.form}>
         <Text style={styles.label}>Código de institución</Text>
@@ -139,6 +169,26 @@ function createStyles(theme: Theme) {
       color: theme.textSecondary,
       textAlign: 'center',
       marginBottom: spacing.xxxl,
+    },
+    serverToggle: {
+      alignSelf: 'center',
+      marginBottom: spacing.md,
+    },
+    serverToggleLabel: {
+      fontSize: 12,
+      color: theme.textMuted,
+      textAlign: 'center',
+    },
+    serverInput: {
+      borderWidth: 1,
+      borderColor: theme.border,
+      borderRadius: radius.md,
+      paddingHorizontal: spacing.md + 2,
+      paddingVertical: spacing.sm,
+      fontSize: 14,
+      color: theme.textPrimary,
+      backgroundColor: theme.surface,
+      marginBottom: spacing.xl,
     },
     form: {
       backgroundColor: theme.surface,

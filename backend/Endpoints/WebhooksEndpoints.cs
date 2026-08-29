@@ -38,6 +38,13 @@ public static class WebhooksEndpoints
             return Results.Ok(new WebhookCreatedResponseDto(webhook.Id, webhook.Url, secret));
         })
         .RequireAuthorization(ApiKeyAuth.SchemeName)
-        .WithName("CreateWebhook");
+        .WithName("CreateWebhook")
+        .WithSummary("Registra la URL propia del cuartel para recibir respuestas")
+        .WithDescription(
+            "Lo llama el BACKEND DEL CUARTEL, con su API key. Cada vez que un bombero responde " +
+            "una alerta de tu institución, te mandamos un POST firmado (HMAC-SHA256, header " +
+            "X-Signature) a esta URL. El secret para verificar la firma se devuelve UNA sola " +
+            "vez, en esta respuesta — no queda forma de volver a consultarlo.")
+        .WithTags("Backend del cuartel");
     }
 }

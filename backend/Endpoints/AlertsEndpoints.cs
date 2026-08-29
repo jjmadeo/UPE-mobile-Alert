@@ -42,7 +42,18 @@ public static class AlertsEndpoints
             }
         })
         .RequireAuthorization(ApiKeyAuth.SchemeName)
-        .WithName("CreateAlert");
+        .WithName("CreateAlert")
+        .WithSummary("Dispara una alerta a bomberos puntuales de tu institución")
+        .WithDescription(
+            "Lo llama el BACKEND DEL CUARTEL, autenticado con su API key (header X-Api-Key). " +
+            "Siempre devuelve 200: se prioriza mandar el push a los firefighterIds que sí son " +
+            "válidos, aunque otros no lo sean — el detalle de qué id falló va en el body " +
+            "(unknownFirefighterIds / firefightersWithoutDevice), nunca en el status code. " +
+            "correlationId lo generás vos (UUID) — reenviar el mismo es un replay idempotente, " +
+            "no crea una alerta nueva, y es el mismo valor que después vuelve en el webhook de " +
+            "cada respuesta. Reintenta el push cada 10s (configurable) hasta que alguien " +
+            "responda o se agoten los reintentos.")
+        .WithTags("Backend del cuartel");
 
         app.MapPost("/api/alerts/{alertId}/response", async (
             string alertId,
@@ -70,7 +81,13 @@ public static class AlertsEndpoints
             }
         })
         .RequireAuthorization()
-        .WithName("RespondToAlert");
+        .WithName("RespondToAlert")
+        .WithSummary("El bombero responde ATTENDING / NOT_ATTENDING")
+        .WithDescription(
+            "Lo llama la APP MOBILE, con el JWT del login. Una vez que UN bombero responde, se " +
+            "deja de reintentar el push a toda la institución. Dispara el webhook del cuartel " +
+            "(si tiene uno registrado) con la respuesta.")
+        .WithTags("Bombero (app mobile)");
 
         // Debug, sin auth — igual que en mock-server/server.js, para poder
         // chequear respuestas fácil durante pruebas. Con los webhooks
@@ -101,6 +118,11 @@ public static class AlertsEndpoints
 
             return Results.Ok(responses);
         })
-        .WithName("GetAlertResponses");
+        .WithName("GetAlertResponses")
+        .WithSummary("[Debug] Respuestas de una alerta, sin auth")
+        .WithDescription(
+            "Solo para debug manual — con webhooks configurados no debería hacer falta " +
+            "consultar esto por polling, ver POST /api/webhooks.")
+        .WithTags("Debug");
     }
 }

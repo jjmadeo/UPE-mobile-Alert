@@ -4,6 +4,10 @@ Backend real (reemplaza a `mock-server/` de a poco) para la app de alertas de
 bomberos. C# / ASP.NET Core Minimal APIs, tipado y orientado a objetos,
 persistencia en PostgreSQL vía EF Core.
 
+> ¿Buscás cómo integrar el backend de TU cuartel (mandar alertas, recibir
+> respuestas por webhook)? Ver [`INTEGRATION.md`](INTEGRATION.md) — esto de
+> acá es la doc de cómo correr/desarrollar este backend en sí.
+
 ## Arquitectura: plataforma multi-cuartel, no dueño de los usuarios
 
 Este backend **no es** el sistema de un cuartel — es una plataforma
@@ -60,6 +64,28 @@ Queda escuchando en **`http://localhost:5080`**. Health check:
 ```bash
 curl http://localhost:5080/api/health
 ```
+
+### Documentación interactiva de la API (Scalar)
+
+`http://localhost:5080/scalar` — UI navegable generada del spec OpenAPI
+(`/openapi/v1.json`), con la descripción de cada endpoint y la posibilidad
+de probar requests reales desde el navegador. Solo en `Development` (el
+ambiente que usa `docker-compose.yml`).
+
+### Mandar una alerta de prueba sin escribir código
+
+```bash
+./scripts/send-alert.sh          # Linux / Mac / WSL — solo necesita curl
+./scripts/send-alert.ps1         # Windows — PowerShell
+node scripts/send-test-alert.js  # equivalente en Node, si ya lo tenés instalado
+```
+
+Los tres hacen lo mismo: simulan al backend de un cuartel llamando
+`POST /api/alerts` con la API key de prueba. `--help` (`.sh`) o
+`Get-Help ./scripts/send-alert.ps1 -Detailed` (`.ps1`) para ver todas las
+opciones (título, mensaje, ubicación, a qué `firefighterIds`, etc.). Ver
+también el README de la raíz del repo para el flujo completo de punta a
+punta con la app.
 
 ### ⚠️ Si cambiás algo que solo corre una vez al arrancar
 
@@ -204,6 +230,24 @@ servicio que tenga que quedar corriendo. La primera vez buildea la imagen
 sola si no existe (o `docker compose build harlequin` a mano). Adentro:
 tab para moverse entre el árbol de tablas/schema y el editor, `F5` o
 `ctrl+enter` para correr la query.
+
+### Alternativa con interfaz web (pgAdmin)
+
+Si preferís algo gráfico en el navegador en vez de una TUI, `pgadmin` es un
+servicio más de `docker-compose.yml` — a diferencia de Harlequin, este sí
+queda corriendo en segundo plano:
+
+```bash
+cd backend
+docker compose up -d pgadmin
+```
+
+Después, en `http://localhost:5050`:
+
+| | |
+|---|---|
+| Login de pgAdmin | `dev@mobilealert.com` / `mobilealert` |
+| Conexión a la base | ya aparece precargada como "mobilealert (docker-compose)" (`tools/pgadmin/servers.json`) — pide la contraseña de Postgres (`mobilealert`) la primera vez que la abrís |
 
 ## Modelo de datos
 

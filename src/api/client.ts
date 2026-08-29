@@ -1,6 +1,6 @@
 import axios, { AxiosInstance } from 'axios';
-import { MOCK_BACKEND_URL } from '../config/env';
 import { useAuthStore } from '../state/authStore';
+import { useServerConfigStore } from '../state/serverConfigStore';
 
 /**
  * Se crea una instancia nueva por request en lugar de una única instancia
@@ -11,8 +11,9 @@ import { useAuthStore } from '../state/authStore';
  */
 export function getApiClient(): AxiosInstance {
   const { token, branding } = useAuthStore.getState();
+  const { serverUrl } = useServerConfigStore.getState();
   return axios.create({
-    baseURL: branding.backendUrl || MOCK_BACKEND_URL,
+    baseURL: branding.backendUrl || serverUrl,
     timeout: 15000,
     headers: {
       'Content-Type': 'application/json',

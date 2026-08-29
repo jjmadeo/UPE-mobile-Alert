@@ -1,7 +1,7 @@
 import axios from 'axios';
-import { MOCK_BACKEND_URL } from '../config/env';
 import { BrandingConfig } from '../types/branding';
 import { Firefighter } from '../state/authStore';
+import { useServerConfigStore } from '../state/serverConfigStore';
 import { getApiClient } from './client';
 
 export interface LoginParams {
@@ -17,13 +17,15 @@ export interface LoginResponse {
 }
 
 /**
- * El login pega siempre al mock-server "general" (no al backendUrl de la
- * institución, que todavía no conocemos) porque es el que resuelve qué
- * institución es cada código y devuelve su branding + backendUrl real.
+ * El login pega siempre al backend "general" configurado en
+ * serverConfigStore (no al backendUrl de la institución, que todavía no
+ * conocemos) porque es el que resuelve qué institución es cada código y
+ * devuelve su branding + backendUrl real.
  */
 export async function login(params: LoginParams): Promise<LoginResponse> {
+  const { serverUrl } = useServerConfigStore.getState();
   const { data } = await axios.post<LoginResponse>(
-    `${MOCK_BACKEND_URL}/api/auth/login`,
+    `${serverUrl}/api/auth/login`,
     params,
   );
   return data;
