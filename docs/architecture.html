@@ -1,0 +1,571 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Mobile Alert — Diagramas</title>
+<meta name="description" content="Diagrama de arquitectura y secuencias de cada caso de uso del backend de Mobile Alert.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+
+<style>
+  :root {
+    --bg: #FBF8F6;
+    --surface: #FFFFFF;
+    --surface-2: #F4EEEA;
+    --border: #E7DED8;
+    --text: #2A1E1B;
+    --text-muted: #7C6D64;
+    --accent: #AB2118;
+    --accent-soft: #F4DAD7;
+    --accent2: #1E3A6E;
+    --accent2-soft: #DCE3F0;
+    --infra: #64594F;
+    --infra-soft: #EAE3DA;
+    --shadow: 0 1px 2px rgba(42,30,27,0.06), 0 8px 24px -12px rgba(42,30,27,0.18);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #17110F;
+      --surface: #1F1714;
+      --surface-2: #241B17;
+      --border: #3B2C26;
+      --text: #F3E9E3;
+      --text-muted: #B4A197;
+      --accent: #F0685C;
+      --accent-soft: #402320;
+      --accent2: #7C97DE;
+      --accent2-soft: #23304C;
+      --infra: #B0A297;
+      --infra-soft: #2A2019;
+      --shadow: 0 1px 2px rgba(0,0,0,0.3), 0 8px 24px -12px rgba(0,0,0,0.5);
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #17110F;
+    --surface: #1F1714;
+    --surface-2: #241B17;
+    --border: #3B2C26;
+    --text: #F3E9E3;
+    --text-muted: #B4A197;
+    --accent: #F0685C;
+    --accent-soft: #402320;
+    --accent2: #7C97DE;
+    --accent2-soft: #23304C;
+    --infra: #B0A297;
+    --infra-soft: #2A2019;
+    --shadow: 0 1px 2px rgba(0,0,0,0.3), 0 8px 24px -12px rgba(0,0,0,0.5);
+  }
+
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: "IBM Plex Sans", system-ui, sans-serif;
+    -webkit-font-smoothing: antialiased;
+  }
+  .wrap {
+    max-width: 980px;
+    margin: 0 auto;
+    padding: 56px 24px 96px;
+  }
+  .eyebrow {
+    font-family: "IBM Plex Mono", monospace;
+    font-size: 12.5px;
+    letter-spacing: 0.09em;
+    text-transform: uppercase;
+    color: var(--accent);
+    font-weight: 600;
+  }
+  h1 {
+    font-size: clamp(28px, 4vw, 40px);
+    line-height: 1.15;
+    margin: 10px 0 14px;
+    text-wrap: balance;
+    letter-spacing: -0.01em;
+  }
+  .lede {
+    max-width: 62ch;
+    color: var(--text-muted);
+    font-size: 16.5px;
+    line-height: 1.6;
+  }
+  nav.toc {
+    margin-top: 32px;
+    padding: 16px 20px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px 20px;
+  }
+  nav.toc a {
+    font-family: "IBM Plex Mono", monospace;
+    font-size: 13px;
+    color: var(--text-muted);
+    text-decoration: none;
+    border-bottom: 1px solid transparent;
+  }
+  nav.toc a:hover, nav.toc a:focus-visible { color: var(--accent); border-color: var(--accent); }
+
+  section { margin-top: 68px; scroll-margin-top: 24px; }
+  section .kicker {
+    font-family: "IBM Plex Mono", monospace;
+    font-size: 12px;
+    color: var(--text-muted);
+    letter-spacing: 0.04em;
+  }
+  h2 {
+    font-size: 23px;
+    margin: 4px 0 10px;
+    letter-spacing: -0.01em;
+  }
+  .caption {
+    color: var(--text-muted);
+    font-size: 15px;
+    line-height: 1.65;
+    max-width: 68ch;
+    margin-bottom: 22px;
+  }
+  .caption code, td code {
+    font-family: "IBM Plex Mono", monospace;
+    font-size: 0.92em;
+    background: var(--surface-2);
+    padding: 0.1em 0.4em;
+    border-radius: 4px;
+  }
+
+  figure {
+    margin: 0;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    box-shadow: var(--shadow);
+    padding: 20px clamp(8px, 3vw, 28px) 16px;
+    overflow-x: auto;
+  }
+  figure svg { display: block; width: 100%; height: auto; min-width: 560px; }
+  figcaption {
+    font-size: 13px;
+    color: var(--text-muted);
+    padding: 12px 6px 2px;
+    border-top: 1px solid var(--border);
+    margin-top: 14px;
+  }
+
+  svg text { font-family: "IBM Plex Sans", system-ui, sans-serif; fill: currentColor; }
+  .mono { font-family: "IBM Plex Mono", monospace; }
+  .lifeline { stroke: currentColor; stroke-opacity: 0.28; stroke-width: 1.5; stroke-dasharray: 3 4; }
+  .msg-line { stroke: currentColor; stroke-width: 1.6; fill: none; }
+  .msg-line.dashed { stroke-dasharray: 6 4; }
+  .msg-label { font-size: 12.5px; }
+  .msg-label.mono { font-size: 11.5px; }
+  .box-label { font-size: 13px; font-weight: 600; }
+  .sub-label { font-size: 10.5px; fill: var(--text-muted); }
+  .frame { fill: none; stroke: currentColor; stroke-opacity: 0.4; stroke-width: 1.2; stroke-dasharray: 4 3; }
+  .frame-tag { font-size: 10.5px; font-weight: 600; letter-spacing: 0.03em; }
+
+  footer {
+    margin-top: 80px;
+    padding-top: 20px;
+    border-top: 1px solid var(--border);
+    color: var(--text-muted);
+    font-size: 13px;
+  }
+  footer a { color: var(--text-muted); }
+
+  @media (max-width: 640px) {
+    figure svg { min-width: 640px; }
+  }
+</style>
+</head>
+<body>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="currentColor" />
+    </marker>
+  </defs>
+</svg>
+
+<div class="wrap">
+  <p class="eyebrow">Mobile Alert · Backend</p>
+  <h1>Arquitectura y flujos</h1>
+  <p class="lede">
+    Diagrama de arquitectura del sistema y diagramas de secuencia de cada
+    caso de uso expuesto por la API. Referencia visual de
+    <a href="../backend/README.md" style="color:inherit">backend/README.md</a>
+    y <a href="../backend/INTEGRATION.md" style="color:inherit">backend/INTEGRATION.md</a>.
+  </p>
+
+  <nav class="toc" aria-label="Contenido">
+    <a href="#arquitectura">Arquitectura</a>
+    <a href="#login">Inicio de sesión</a>
+    <a href="#dispositivo">Registro de dispositivo</a>
+    <a href="#alerta">Creación y envío de alerta</a>
+    <a href="#respuesta">Respuesta y webhook</a>
+    <a href="#webhook">Registro de webhook</a>
+  </nav>
+
+  <!-- ============================================================ -->
+  <section id="arquitectura">
+    <p class="kicker">01 · Sistema</p>
+    <h2>Arquitectura</h2>
+    <p class="caption">
+      Mobile Alert intermedia entre el sistema propio de cada institución
+      (cuartel) y los dispositivos de sus bomberos. No administra las
+      credenciales de los bomberos por defecto: puede delegar la
+      autenticación al backend de la institución.
+    </p>
+    <figure>
+      <svg viewBox="0 0 1000 330" role="img" aria-label="Backend del cuartel envía alertas a Mobile Alert API por API key; Mobile Alert reenvía por push a través de Firebase Cloud Messaging hacia la aplicación móvil, persiste en PostgreSQL, y recibe de vuelta la respuesta del bombero y la reenvía como webhook firmado al backend del cuartel.">
+
+        <!-- top row boxes -->
+        <g class="mono">
+          <rect x="40" y="40" width="190" height="64" rx="10" fill="var(--accent2-soft)" stroke="var(--accent2)" stroke-width="1.4"/>
+          <text x="135" y="66" text-anchor="middle" class="box-label" fill="var(--accent2)">Backend del</text>
+          <text x="135" y="82" text-anchor="middle" class="box-label" fill="var(--accent2)">cuartel</text>
+
+          <rect x="358" y="34" width="220" height="76" rx="10" fill="var(--accent)" stroke="var(--accent)" stroke-width="1.4"/>
+          <text x="468" y="65" text-anchor="middle" class="box-label" fill="#fff">Mobile Alert</text>
+          <text x="468" y="83" text-anchor="middle" class="box-label" fill="#fff">API</text>
+
+          <rect x="748" y="40" width="200" height="64" rx="10" fill="var(--infra-soft)" stroke="var(--infra)" stroke-width="1.4"/>
+          <text x="848" y="66" text-anchor="middle" class="box-label" fill="var(--infra)">Firebase Cloud</text>
+          <text x="848" y="82" text-anchor="middle" class="box-label" fill="var(--infra)">Messaging</text>
+        </g>
+
+        <!-- App box, second row right -->
+        <g class="mono">
+          <rect x="748" y="150" width="200" height="64" rx="10" fill="var(--surface-2)" stroke="currentColor" stroke-opacity="0.5" stroke-width="1.4"/>
+          <text x="848" y="176" text-anchor="middle" class="box-label">Aplicación</text>
+          <text x="848" y="192" text-anchor="middle" class="box-label">móvil</text>
+        </g>
+
+        <!-- DB box, below API -->
+        <g class="mono">
+          <rect x="378" y="150" width="180" height="56" rx="10" fill="var(--infra-soft)" stroke="var(--infra)" stroke-width="1.4"/>
+          <ellipse cx="468" cy="150" rx="90" ry="7" fill="var(--infra-soft)" stroke="var(--infra)" stroke-width="1.4"/>
+          <text x="468" y="184" text-anchor="middle" class="box-label" fill="var(--infra)">PostgreSQL</text>
+        </g>
+
+        <!-- top lane arrows -->
+        <line x1="230" y1="72" x2="352" y2="72" class="msg-line" marker-end="url(#arrow)" />
+        <text x="291" y="62" text-anchor="middle" class="msg-label mono">POST /api/alerts</text>
+
+        <line x1="578" y1="66" x2="742" y2="66" class="msg-line" marker-end="url(#arrow)" />
+        <text x="660" y="56" text-anchor="middle" class="msg-label">notificación push</text>
+
+        <line x1="848" y1="104" x2="848" y2="144" class="msg-line" marker-end="url(#arrow)" />
+
+        <!-- API <-> DB -->
+        <line x1="468" y1="110" x2="468" y2="144" class="msg-line" marker-end="url(#arrow)" />
+        <text x="454" y="132" text-anchor="end" class="msg-label" fill="var(--text-muted)">persiste</text>
+
+        <!-- return lane: App -> API (response) — x=568 a propósito, fuera
+             del rango horizontal de la caja de PostgreSQL (378–558), para
+             no cruzarla visualmente. -->
+        <path d="M 848 214 L 848 260 L 568 260 L 568 110" class="msg-line" fill="none" marker-end="url(#arrow)" />
+        <text x="708" y="252" text-anchor="middle" class="msg-label mono">POST .../response</text>
+
+        <!-- return lane: API -> Cuartel (webhook) — x=368, mismo motivo. -->
+        <path d="M 368 110 L 368 296 L 135 296 L 135 104" class="msg-line dashed" fill="none" marker-end="url(#arrow)" />
+        <text x="251" y="288" text-anchor="middle" class="msg-label">webhook firmado</text>
+
+        <!-- auth mode annotation -->
+        <text x="135" y="130" text-anchor="middle" class="sub-label">autenticación propia u opcionalmente delegada</text>
+      </svg>
+      <figcaption>El backend del cuartel dispara la alerta con su clave de API; Mobile Alert reenvía por FCM, persiste el ciclo completo en PostgreSQL, y notifica la respuesta del bombero de vuelta al cuartel mediante un webhook firmado.</figcaption>
+    </figure>
+  </section>
+
+  <!-- ============================================================ -->
+  <section id="login">
+    <p class="kicker">02 · Caso de uso</p>
+    <h2>Inicio de sesión</h2>
+    <p class="caption">
+      La contraseña se valida localmente (BCrypt) o se reenvía al backend
+      propio de la institución, según si esta tiene configurada
+      autenticación delegada.
+    </p>
+    <figure>
+      <svg viewBox="0 0 900 400" role="img" aria-label="Diagrama de secuencia de inicio de sesión: la aplicación móvil envía usuario y contraseña a Mobile Alert API, que busca la institución y, según tenga o no autenticación delegada, valida contra el backend del cuartel o localmente, devolviendo un token JWT.">
+        <!-- participants -->
+        <g class="mono">
+          <rect x="20"  y="20" width="150" height="44" rx="9" fill="var(--surface-2)" stroke="currentColor" stroke-opacity="0.5"/>
+          <text x="95" y="47" text-anchor="middle" class="box-label">Aplicación móvil</text>
+
+          <rect x="355" y="20" width="170" height="44" rx="9" fill="var(--accent)" stroke="var(--accent)"/>
+          <text x="440" y="47" text-anchor="middle" class="box-label" fill="#fff">Mobile Alert API</text>
+
+          <rect x="605" y="20" width="150" height="44" rx="9" fill="var(--accent2-soft)" stroke="var(--accent2)"/>
+          <text x="680" y="41" text-anchor="middle" class="box-label" fill="var(--accent2)">Backend del</text>
+          <text x="680" y="55" text-anchor="middle" class="box-label" fill="var(--accent2)">cuartel (opcional)</text>
+
+          <rect x="800" y="20" width="80" height="44" rx="9" fill="var(--infra-soft)" stroke="var(--infra)"/>
+          <text x="840" y="47" text-anchor="middle" class="box-label" fill="var(--infra)">Datos</text>
+        </g>
+
+        <line x1="95" y1="64" x2="95" y2="380" class="lifeline"/>
+        <line x1="440" y1="64" x2="440" y2="380" class="lifeline"/>
+        <line x1="680" y1="64" x2="680" y2="380" class="lifeline"/>
+        <line x1="840" y1="64" x2="840" y2="380" class="lifeline"/>
+
+        <line x1="95" y1="100" x2="434" y2="100" class="msg-line" marker-end="url(#arrow)"/>
+        <text x="265" y="92" text-anchor="middle" class="msg-label mono">POST /api/auth/login</text>
+
+        <line x1="440" y1="140" x2="834" y2="140" class="msg-line" marker-end="url(#arrow)"/>
+        <text x="640" y="132" text-anchor="middle" class="msg-label">buscar institución</text>
+
+        <!-- alt frame -->
+        <rect x="60" y="172" width="790" height="164" class="frame"/>
+        <path d="M60,172 h64 v16 l-10,10 h-54 z" fill="var(--surface-2)" stroke="currentColor" stroke-opacity="0.4"/>
+        <text x="72" y="188" class="frame-tag">alt</text>
+        <line x1="60" y1="256" x2="850" y2="256" class="frame" stroke-dasharray="4 3"/>
+
+        <text x="220" y="196" class="sub-label">institución con autenticación delegada</text>
+        <line x1="440" y1="210" x2="674" y2="210" class="msg-line" marker-end="url(#arrow)"/>
+        <text x="557" y="204" text-anchor="middle" class="msg-label">validar credenciales</text>
+        <line x1="674" y1="228" x2="446" y2="228" class="msg-line dashed" marker-end="url(#arrow)"/>
+        <text x="557" y="222" text-anchor="middle" class="msg-label">nombre / id externo</text>
+
+        <text x="220" y="272" class="sub-label">institución con autenticación local</text>
+        <line x1="440" y1="288" x2="834" y2="288" class="msg-line" marker-end="url(#arrow)"/>
+        <text x="640" y="282" text-anchor="middle" class="msg-label">validar contraseña (BCrypt)</text>
+
+        <line x1="440" y1="360" x2="101" y2="360" class="msg-line dashed" marker-end="url(#arrow)"/>
+        <text x="265" y="352" text-anchor="middle" class="msg-label">token JWT, datos del bombero, institución</text>
+      </svg>
+      <figcaption>El identificador interno del bombero (<span class="mono">firefighter.id</span>) queda disponible en la respuesta desde este momento.</figcaption>
+    </figure>
+  </section>
+
+  <!-- ============================================================ -->
+  <section id="dispositivo">
+    <p class="kicker">03 · Caso de uso</p>
+    <h2>Registro de dispositivo</h2>
+    <p class="caption">
+      Un token de dispositivo previamente asociado a otro bombero se
+      reasigna automáticamente, cubriendo el caso de un mismo teléfono
+      reutilizado por otra cuenta.
+    </p>
+    <figure>
+      <svg viewBox="0 0 700 230" role="img" aria-label="Diagrama de secuencia de registro de dispositivo: la aplicación envía el token FCM autenticada con JWT, Mobile Alert API elimina tokens anteriores del bombero y guarda el nuevo.">
+        <g class="mono">
+          <rect x="20"  y="20" width="150" height="44" rx="9" fill="var(--surface-2)" stroke="currentColor" stroke-opacity="0.5"/>
+          <text x="95" y="47" text-anchor="middle" class="box-label">Aplicación móvil</text>
+
+          <rect x="290" y="20" width="170" height="44" rx="9" fill="var(--accent)" stroke="var(--accent)"/>
+          <text x="375" y="47" text-anchor="middle" class="box-label" fill="#fff">Mobile Alert API</text>
+
+          <rect x="600" y="20" width="80" height="44" rx="9" fill="var(--infra-soft)" stroke="var(--infra)"/>
+          <text x="640" y="47" text-anchor="middle" class="box-label" fill="var(--infra)">Datos</text>
+        </g>
+
+        <line x1="95" y1="64" x2="95" y2="210" class="lifeline"/>
+        <line x1="375" y1="64" x2="375" y2="210" class="lifeline"/>
+        <line x1="640" y1="64" x2="640" y2="210" class="lifeline"/>
+
+        <line x1="95" y1="100" x2="369" y2="100" class="msg-line" marker-end="url(#arrow)"/>
+        <text x="232" y="92" text-anchor="middle" class="msg-label mono">POST /api/devices/register</text>
+
+        <line x1="375" y1="140" x2="634" y2="140" class="msg-line" marker-end="url(#arrow)"/>
+        <text x="507" y="132" text-anchor="middle" class="msg-label">eliminar tokens anteriores del bombero</text>
+
+        <line x1="375" y1="172" x2="634" y2="172" class="msg-line" marker-end="url(#arrow)"/>
+        <text x="507" y="164" text-anchor="middle" class="msg-label">guardar el nuevo token</text>
+
+        <line x1="375" y1="200" x2="101" y2="200" class="msg-line dashed" marker-end="url(#arrow)"/>
+        <text x="232" y="192" text-anchor="middle" class="msg-label">confirmación</text>
+      </svg>
+      <figcaption>Un bombero tiene, como máximo, un dispositivo activo por vez.</figcaption>
+    </figure>
+  </section>
+
+  <!-- ============================================================ -->
+  <section id="alerta">
+    <p class="kicker">04 · Caso de uso</p>
+    <h2>Creación y envío de una alerta</h2>
+    <p class="caption">
+      El envío es parcial por diseño: si algún destinatario es inválido o
+      no tiene dispositivo, la alerta igual se envía a los restantes. El
+      reenvío automático continúa hasta la primera respuesta o el máximo
+      de reintentos configurado.
+    </p>
+    <figure>
+      <svg viewBox="0 0 1000 580" role="img" aria-label="Diagrama de secuencia de creación y envío de alerta: el backend del cuartel envía la alerta; si el identificador de correlación ya fue procesado se devuelve la alerta existente sin reenviar; si es nueva, se resuelven destinatarios, se persiste y se envía por FCM a la aplicación; y un ciclo reintenta el envío hasta la primera respuesta o el máximo de reintentos.">
+        <g class="mono">
+          <rect x="20"  y="20" width="150" height="44" rx="9" fill="var(--accent2-soft)" stroke="var(--accent2)"/>
+          <text x="95" y="47" text-anchor="middle" class="box-label" fill="var(--accent2)">Backend del cuartel</text>
+
+          <rect x="330" y="20" width="170" height="44" rx="9" fill="var(--accent)" stroke="var(--accent)"/>
+          <text x="415" y="47" text-anchor="middle" class="box-label" fill="#fff">Mobile Alert API</text>
+
+          <rect x="600" y="20" width="80" height="44" rx="9" fill="var(--infra-soft)" stroke="var(--infra)"/>
+          <text x="640" y="47" text-anchor="middle" class="box-label" fill="var(--infra)">Datos</text>
+
+          <rect x="750" y="20" width="110" height="44" rx="9" fill="var(--infra-soft)" stroke="var(--infra)"/>
+          <text x="805" y="41" text-anchor="middle" class="box-label" fill="var(--infra)">Firebase</text>
+          <text x="805" y="55" text-anchor="middle" class="box-label" fill="var(--infra)">Cloud Msg.</text>
+
+          <rect x="920" y="20" width="60" height="44" rx="9" fill="var(--surface-2)" stroke="currentColor" stroke-opacity="0.5"/>
+          <text x="950" y="41" text-anchor="middle" class="box-label" font-size="11">App</text>
+          <text x="950" y="55" text-anchor="middle" class="box-label" font-size="11">móvil</text>
+        </g>
+
+        <line x1="95"  y1="64" x2="95"  y2="560" class="lifeline"/>
+        <line x1="415" y1="64" x2="415" y2="560" class="lifeline"/>
+        <line x1="640" y1="64" x2="640" y2="560" class="lifeline"/>
+        <line x1="805" y1="64" x2="805" y2="560" class="lifeline"/>
+        <line x1="950" y1="64" x2="950" y2="560" class="lifeline"/>
+
+        <line x1="95" y1="98" x2="409" y2="98" class="msg-line" marker-end="url(#arrow)"/>
+        <text x="252" y="90" text-anchor="middle" class="msg-label mono">POST /api/alerts</text>
+
+        <!-- alt frame: correlationId repetido vs. alerta nueva -->
+        <rect x="60" y="122" width="920" height="292" class="frame"/>
+        <path d="M60,122 h64 v16 l-10,10 h-54 z" fill="var(--surface-2)" stroke="currentColor" stroke-opacity="0.4"/>
+        <text x="72" y="138" class="frame-tag">alt</text>
+
+        <text x="290" y="150" class="sub-label">identificador de correlación ya procesado</text>
+        <line x1="415" y1="182" x2="101" y2="182" class="msg-line dashed" marker-end="url(#arrow)"/>
+        <text x="255" y="174" text-anchor="middle" class="msg-label">alerta existente (sin reenviar)</text>
+
+        <line x1="60" y1="204" x2="980" y2="204" class="frame" stroke-dasharray="4 3"/>
+        <text x="290" y="222" class="sub-label">alerta nueva</text>
+
+        <line x1="415" y1="252" x2="634" y2="252" class="msg-line" marker-end="url(#arrow)"/>
+        <text x="527" y="244" text-anchor="middle" class="msg-label">resolver destinatarios válidos</text>
+
+        <line x1="415" y1="286" x2="634" y2="286" class="msg-line" marker-end="url(#arrow)"/>
+        <text x="527" y="278" text-anchor="middle" class="msg-label">registrar alerta</text>
+
+        <line x1="415" y1="320" x2="799" y2="320" class="msg-line" marker-end="url(#arrow)"/>
+        <text x="607" y="312" text-anchor="middle" class="msg-label">enviar notificación (por destinatario)</text>
+
+        <line x1="805" y1="350" x2="944" y2="350" class="msg-line" marker-end="url(#arrow)"/>
+        <text x="877" y="342" text-anchor="middle" class="msg-label">notificación</text>
+
+        <line x1="415" y1="384" x2="101" y2="384" class="msg-line dashed" marker-end="url(#arrow)"/>
+        <text x="255" y="376" text-anchor="middle" class="msg-label">resultado: enviados, inválidos, sin dispositivo</text>
+
+        <!-- loop frame -->
+        <rect x="60" y="440" width="700" height="100" class="frame"/>
+        <path d="M60,440 h80 v16 l-10,10 h-70 z" fill="var(--surface-2)" stroke="currentColor" stroke-opacity="0.4"/>
+        <text x="72" y="456" class="frame-tag">loop</text>
+        <text x="220" y="456" class="sub-label">hasta la primera respuesta o el máximo de reintentos</text>
+
+        <line x1="415" y1="486" x2="634" y2="486" class="msg-line" marker-end="url(#arrow)"/>
+        <text x="527" y="478" text-anchor="middle" class="msg-label">consultar alertas pendientes</text>
+
+        <line x1="415" y1="516" x2="799" y2="516" class="msg-line" marker-end="url(#arrow)"/>
+        <text x="607" y="508" text-anchor="middle" class="msg-label">reenviar notificación</text>
+      </svg>
+      <figcaption>El identificador de correlación es generado por el cuartel; un reenvío con el mismo valor se resuelve como una repetición idempotente, sin duplicar el envío.</figcaption>
+    </figure>
+  </section>
+
+  <!-- ============================================================ -->
+  <section id="respuesta">
+    <p class="kicker">05 · Caso de uso</p>
+    <h2>Respuesta a una alerta y notificación al cuartel</h2>
+    <p class="caption">
+      La primera respuesta registrada detiene los reintentos de envío para
+      el resto de los destinatarios de esa alerta.
+    </p>
+    <figure>
+      <svg viewBox="0 0 900 400" role="img" aria-label="Diagrama de secuencia de respuesta a alerta: la aplicación envía la respuesta, Mobile Alert API la persiste, marca la alerta como respondida, y si la institución tiene webhook configurado notifica al backend del cuartel con una solicitud firmada.">
+        <g class="mono">
+          <rect x="20"  y="20" width="150" height="44" rx="9" fill="var(--surface-2)" stroke="currentColor" stroke-opacity="0.5"/>
+          <text x="95" y="47" text-anchor="middle" class="box-label">Aplicación móvil</text>
+
+          <rect x="355" y="20" width="170" height="44" rx="9" fill="var(--accent)" stroke="var(--accent)"/>
+          <text x="440" y="47" text-anchor="middle" class="box-label" fill="#fff">Mobile Alert API</text>
+
+          <rect x="605" y="20" width="80" height="44" rx="9" fill="var(--infra-soft)" stroke="var(--infra)"/>
+          <text x="645" y="47" text-anchor="middle" class="box-label" fill="var(--infra)">Datos</text>
+
+          <rect x="760" y="20" width="120" height="44" rx="9" fill="var(--accent2-soft)" stroke="var(--accent2)"/>
+          <text x="820" y="47" text-anchor="middle" class="box-label" fill="var(--accent2)">Backend del cuartel</text>
+        </g>
+
+        <line x1="95"  y1="64" x2="95"  y2="380" class="lifeline"/>
+        <line x1="440" y1="64" x2="440" y2="380" class="lifeline"/>
+        <line x1="645" y1="64" x2="645" y2="380" class="lifeline"/>
+        <line x1="820" y1="64" x2="820" y2="380" class="lifeline"/>
+
+        <line x1="95" y1="100" x2="434" y2="100" class="msg-line" marker-end="url(#arrow)"/>
+        <text x="265" y="92" text-anchor="middle" class="msg-label mono">POST .../response</text>
+
+        <line x1="440" y1="136" x2="639" y2="136" class="msg-line" marker-end="url(#arrow)"/>
+        <text x="540" y="128" text-anchor="middle" class="msg-label">registrar respuesta</text>
+
+        <line x1="440" y1="168" x2="639" y2="168" class="msg-line" marker-end="url(#arrow)"/>
+        <text x="540" y="160" text-anchor="middle" class="msg-label">marcar alerta como respondida</text>
+
+        <!-- alt frame -->
+        <rect x="60" y="196" width="790" height="110" class="frame"/>
+        <path d="M60,196 h64 v16 l-10,10 h-54 z" fill="var(--surface-2)" stroke="currentColor" stroke-opacity="0.4"/>
+        <text x="72" y="212" class="frame-tag">opt</text>
+        <text x="240" y="212" class="sub-label">institución con webhook configurado</text>
+
+        <line x1="440" y1="240" x2="814" y2="240" class="msg-line" marker-end="url(#arrow)"/>
+        <text x="627" y="232" text-anchor="middle" class="msg-label">notificación firmada de la respuesta</text>
+        <line x1="814" y1="272" x2="446" y2="272" class="msg-line dashed" marker-end="url(#arrow)"/>
+        <text x="627" y="264" text-anchor="middle" class="msg-label">confirmación de recepción</text>
+
+        <line x1="440" y1="340" x2="101" y2="340" class="msg-line dashed" marker-end="url(#arrow)"/>
+        <text x="265" y="332" text-anchor="middle" class="msg-label">confirmación</text>
+      </svg>
+      <figcaption>La respuesta del bombero queda guardada aunque la entrega del webhook falle; el resultado del intento se audita junto a la respuesta.</figcaption>
+    </figure>
+  </section>
+
+  <!-- ============================================================ -->
+  <section id="webhook">
+    <p class="kicker">06 · Caso de uso</p>
+    <h2>Registro de webhook</h2>
+    <p class="caption">
+      La clave de firma se devuelve una única vez, en la respuesta de este
+      llamado.
+    </p>
+    <figure>
+      <svg viewBox="0 0 700 230" role="img" aria-label="Diagrama de secuencia de registro de webhook: el backend del cuartel envía la URL de destino, Mobile Alert API guarda la suscripción con una clave de firma generada y la devuelve una única vez.">
+        <g class="mono">
+          <rect x="20"  y="20" width="150" height="44" rx="9" fill="var(--accent2-soft)" stroke="var(--accent2)"/>
+          <text x="95" y="47" text-anchor="middle" class="box-label" fill="var(--accent2)">Backend del cuartel</text>
+
+          <rect x="290" y="20" width="170" height="44" rx="9" fill="var(--accent)" stroke="var(--accent)"/>
+          <text x="375" y="47" text-anchor="middle" class="box-label" fill="#fff">Mobile Alert API</text>
+
+          <rect x="600" y="20" width="80" height="44" rx="9" fill="var(--infra-soft)" stroke="var(--infra)"/>
+          <text x="640" y="47" text-anchor="middle" class="box-label" fill="var(--infra)">Datos</text>
+        </g>
+
+        <line x1="95" y1="64" x2="95" y2="210" class="lifeline"/>
+        <line x1="375" y1="64" x2="375" y2="210" class="lifeline"/>
+        <line x1="640" y1="64" x2="640" y2="210" class="lifeline"/>
+
+        <line x1="95" y1="100" x2="369" y2="100" class="msg-line" marker-end="url(#arrow)"/>
+        <text x="232" y="92" text-anchor="middle" class="msg-label mono">POST /api/webhooks</text>
+
+        <line x1="375" y1="140" x2="634" y2="140" class="msg-line" marker-end="url(#arrow)"/>
+        <text x="507" y="132" text-anchor="middle" class="msg-label">guardar suscripción y clave de firma</text>
+
+        <line x1="375" y1="192" x2="101" y2="192" class="msg-line dashed" marker-end="url(#arrow)"/>
+        <text x="232" y="184" text-anchor="middle" class="msg-label">identificador, URL, clave de firma</text>
+      </svg>
+      <figcaption>La clave de firma habilita la verificación HMAC-SHA256 del webhook (ver <span class="mono">INTEGRATION.md</span>).</figcaption>
+    </figure>
+  </section>
+
+  <footer>
+    Mobile Alert — documentación técnica del backend.
+  </footer>
+</div>
+</body>
+</html>

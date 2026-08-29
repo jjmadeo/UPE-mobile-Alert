@@ -14,7 +14,7 @@ del cuartel mediante un webhook. No es necesario realizar consultas
 periódicas (polling).
 
 Diagrama de arquitectura y de secuencia de cada caso de uso:
-[Arquitectura y flujos](https://claude.ai/code/artifact/bef31e9b-fd88-4e16-bb09-769653d95923).
+[Arquitectura y flujos](../docs/architecture.html).
 
 Documentación interactiva de la API, con posibilidad de ejecutar
 solicitudes desde el navegador: `http://<host>:5080/scalar` (documento

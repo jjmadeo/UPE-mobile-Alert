@@ -13,7 +13,7 @@ administra las credenciales de los bomberos por defecto; puede delegar la
 autenticación al backend propio de la institución.
 
 Diagrama de arquitectura y de secuencia de cada caso de uso:
-[Arquitectura y flujos](https://claude.ai/code/artifact/bef31e9b-fd88-4e16-bb09-769653d95923).
+[Arquitectura y flujos](docs/architecture.html).
 
 Documentación detallada del backend: [`backend/README.md`](backend/README.md).
 Guía de integración para el backend de una institución:
