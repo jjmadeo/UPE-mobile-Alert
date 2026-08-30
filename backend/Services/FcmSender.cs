@@ -18,6 +18,16 @@ public class FcmOptions
 public interface IFcmSender
 {
     Task<bool> SendAsync(string fcmToken, Dictionary<string, string> data, CancellationToken ct = default);
+
+    /// <summary>Segundo push, en paralelo al data-only de <see cref="SendAsync"/>
+    /// — con campo `notification`, para que Android lo muestre solo aunque
+    /// el fabricante nunca deje correr el handler de la app (el caso que
+    /// falla hoy en Samsung). Red de contención, no reemplazo: no dispara
+    /// pantalla completa (ver AlertService.FanOutAsync y el comentario en
+    /// displayAlertNotification.ts sobre por qué notification+data no
+    /// llega al handler de background).</summary>
+    Task<bool> SendFallbackNotificationAsync(
+        string fcmToken, string title, string body, Dictionary<string, string> data, CancellationToken ct = default);
 }
 
 /// <summary>
@@ -85,6 +95,51 @@ public class FcmSender : IFcmSender
         catch (FirebaseMessagingException ex)
         {
             _logger.LogWarning(ex, "Falló el envío FCM al token {Token}", fcmToken);
+            return false;
+        }
+    }
+
+    public async Task<bool> SendFallbackNotificationAsync(
+        string fcmToken, string title, string body, Dictionary<string, string> data, CancellationToken ct = default)
+    {
+        if (!_enabled)
+        {
+            return false;
+        }
+
+        var message = new Message
+        {
+            Token = fcmToken,
+            Notification = new Notification { Title = title, Body = body },
+            Data = data,
+            Android = new AndroidConfig
+            {
+                Priority = Priority.High,
+                // Mismo canal que crea la app en channel.ts (NOTIFICATION_CHANNEL_ID) —
+                // tiene que coincidir a mano porque no hay forma de importar la
+                // constante entre proyectos. Si el canal todavía no existe en el
+                // teléfono (ensureAlertChannel no llegó a correr nunca), Android
+                // igual muestra la notificación, solo que con la config default en
+                // vez de la nuestra (sonido/vibración) — así que del lado de la app
+                // conviene crear el canal apenas arranca, no recién al mostrar la
+                // primera alerta (ver index.js).
+                Notification = new AndroidNotification { ChannelId = "bomberos-alertas" },
+            },
+            Apns = new ApnsConfig
+            {
+                Headers = new Dictionary<string, string> { ["apns-priority"] = "10" },
+                Aps = new Aps { Sound = "default" },
+            },
+        };
+
+        try
+        {
+            await FirebaseMessaging.DefaultInstance.SendAsync(message, ct);
+            return true;
+        }
+        catch (FirebaseMessagingException ex)
+        {
+            _logger.LogWarning(ex, "Falló el envío FCM (fallback notification) al token {Token}", fcmToken);
             return false;
         }
     }

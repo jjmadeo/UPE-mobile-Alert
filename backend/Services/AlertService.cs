@@ -139,6 +139,16 @@ public class AlertService(AppDbContext db, IFcmSender fcm, WebhookNotifier webho
             {
                 sent++;
             }
+
+            // Red de contención en paralelo, no reemplazo (ver
+            // FcmSender.SendFallbackNotificationAsync): en fabricantes que
+            // matan el proceso antes de que el handler de background llegue
+            // a correr, esto igual le suena/vibra/aparece al bombero. No
+            // suma a `sent`/devicesNotified — ese número sigue siendo el
+            // contrato documentado en INTEGRATION.md (éxito del push
+            // principal, que es el que dispara la pantalla completa).
+            var fallbackData = new Dictionary<string, string>(data) { ["kind"] = "fallback" };
+            await fcm.SendFallbackNotificationAsync(token, $"🚨 {alert.Title}", alert.Message, fallbackData, ct);
         }
 
         logger.LogInformation(

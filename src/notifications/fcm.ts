@@ -65,6 +65,14 @@ export async function syncFcmTokenWithBackend(): Promise<void> {
  */
 export function registerBackgroundMessageHandler(): void {
   setBackgroundMessageHandler(messaging, async remoteMessage => {
+    // El mensaje de respaldo (ver AlertService.FanOutAsync/
+    // FcmSender.SendFallbackNotificationAsync) lleva `notification`, así
+    // que Android nunca llega a invocar este handler para él estando en
+    // background — este chequeo es solo por las dudas / consistencia con
+    // el handler de foreground, donde si hace falta.
+    if (remoteMessage.data?.kind === 'fallback') {
+      return;
+    }
     const alert = alertFromData(remoteMessage.data);
     if (alert) {
       await displayAlertNotification(alert);
@@ -78,6 +86,13 @@ export function registerBackgroundMessageHandler(): void {
  * bombero toque la notificación. */
 export function subscribeToForegroundMessages(): () => void {
   return onMessage(messaging, async (remoteMessage: RemoteMessage) => {
+    // El de respaldo llega igual que el data-only acá (en foreground, FCM
+    // entrega todo por este mismo handler) — se ignora para no mostrar la
+    // pantalla completa dos veces por la misma alerta. Ver
+    // registerBackgroundMessageHandler y AlertService.FanOutAsync.
+    if (remoteMessage.data?.kind === 'fallback') {
+      return;
+    }
     const alert = alertFromData(remoteMessage.data);
     if (!alert) {
       return;

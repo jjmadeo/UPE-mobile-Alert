@@ -12,6 +12,7 @@ public class FakeFcmSender : IFcmSender
     public record Call(string FcmToken, Dictionary<string, string> Data);
 
     private readonly List<Call> _calls = [];
+    private readonly List<Call> _fallbackCalls = [];
     private readonly object _lock = new();
 
     public IReadOnlyList<Call> Calls
@@ -19,11 +20,30 @@ public class FakeFcmSender : IFcmSender
         get { lock (_lock) { return _calls.ToList(); } }
     }
 
+    /// <summary>Llamadas a <see cref="SendFallbackNotificationAsync"/> (la
+    /// red de contención en paralelo — ver AlertService.FanOutAsync),
+    /// separadas de <see cref="Calls"/> para que un test pueda verificar
+    /// una sin mezclarla con la otra.</summary>
+    public IReadOnlyList<Call> FallbackCalls
+    {
+        get { lock (_lock) { return _fallbackCalls.ToList(); } }
+    }
+
     public Task<bool> SendAsync(string fcmToken, Dictionary<string, string> data, CancellationToken ct = default)
     {
         lock (_lock)
         {
             _calls.Add(new Call(fcmToken, data));
+        }
+        return Task.FromResult(true);
+    }
+
+    public Task<bool> SendFallbackNotificationAsync(
+        string fcmToken, string title, string body, Dictionary<string, string> data, CancellationToken ct = default)
+    {
+        lock (_lock)
+        {
+            _fallbackCalls.Add(new Call(fcmToken, data));
         }
         return Task.FromResult(true);
     }
