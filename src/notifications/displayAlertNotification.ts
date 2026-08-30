@@ -54,6 +54,7 @@ export async function displayAlertNotification(
       color: colors.red600,
       autoCancel: false,
       ongoing: true,
+      sound: 'default',
       loopSound: true,
       showTimestamp: true,
       asForegroundService: true,

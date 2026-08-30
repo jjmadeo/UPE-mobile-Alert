@@ -123,7 +123,7 @@ public class FcmSender : IFcmSender
                 // vez de la nuestra (sonido/vibración) — así que del lado de la app
                 // conviene crear el canal apenas arranca, no recién al mostrar la
                 // primera alerta (ver index.js).
-                Notification = new AndroidNotification { ChannelId = "bomberos-alertas" },
+                Notification = new AndroidNotification { ChannelId = "bomberos-alertas", Sound = "default" },
             },
             Apns = new ApnsConfig
             {
