@@ -56,6 +56,13 @@ de correlación se resuelve como una repetición idempotente. El envío se
 reintenta automáticamente hasta la primera respuesta o el máximo de
 reintentos configurado.
 
+Por cada dispositivo se mandan dos push en paralelo (ver
+`AlertService.FanOutAsync`): uno data-only, que dispara la pantalla
+completa del lado de la app, y uno de respaldo con `notification` nativo,
+que el sistema operativo del teléfono entrega igual aunque el fabricante
+no deje correr el código de la app. Solo el primero cuenta para
+`devicesNotified` en la respuesta.
+
 ![Diagrama de secuencia: creación y envío de una alerta](../docs/diagrams/alerta.svg)
 
 ### Respuesta a una alerta y notificación al cuartel

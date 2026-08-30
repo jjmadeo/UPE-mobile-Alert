@@ -165,8 +165,27 @@ formal (Google Play) se requiere un keystore propio.
   del usuario en determinados dispositivos (Ajustes → Aplicaciones →
   Mobile Alert → Notificaciones a pantalla completa).
 - **Gestión de energía**: algunos fabricantes (Xiaomi, Huawei, Samsung,
-  entre otros) restringen procesos en segundo plano de forma agresiva. Se
-  recomienda desactivar la optimización de batería para la aplicación.
+  entre otros) restringen procesos en segundo plano de forma agresiva, más
+  allá de lo que deja ajustar Android estándar. La app ya usa las
+  mitigaciones disponibles del lado del código — foreground service al
+  mostrar la alerta y un push de respaldo en paralelo (ver "Entrega de la
+  alerta" abajo) — pero para una entrega consistente conviene revisar
+  además, en el teléfono:
+  - Batería de la app en "Sin restricciones" (no "Optimizada").
+  - En Samsung específicamente: Ajustes → Batería → Modo de ahorro de
+    energía → desactivarlo (o agregar la app a las excepciones), y Batería
+    adaptable/adaptativa → desactivarla (puede pisar el ajuste manual con
+    el tiempo).
+  - Modo de sonido del teléfono en "Sonido", no "Vibrar" — con el sistema
+    en modo vibrar no suena ninguna notificación, sin importar la
+    configuración de la app.
+- **Entrega de la alerta**: cada dispositivo recibe dos push en paralelo —
+  uno data-only, que dispara la pantalla completa del lado de la app, y
+  uno de respaldo con notificación nativa de Android, que el sistema
+  entrega igual aunque el fabricante no deje correr el código de la app.
+  En el peor caso, el respaldo garantiza sonido y una notificación
+  visible aunque no se logre la pantalla completa automática (ver
+  `backend/Services/FcmSender.cs` y `src/notifications/displayAlertNotification.ts`).
 - **Tráfico HTTP**: la aplicación permite tráfico sin cifrar
   (`android/app/src/main/res/xml/network_security_config.xml`) para
   soportar backends autoalojados sin certificado TLS. En un despliegue con
