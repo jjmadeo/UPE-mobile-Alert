@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using System.Linq;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging.Abstractions;
@@ -193,6 +194,50 @@ public class AlertServiceTests
 
         var reloaded = await db.Alerts.SingleAsync(a => a.Id == alert.Id);
         Assert.Equal(AlertStatus.Answered, reloaded.Status);
+    }
+
+    /// <summary>Prueba el envío masivo — no solo que "no se rompe con
+    /// muchos destinatarios", sino que efectivamente los manda en paralelo
+    /// (ver el comentario en AlertService.FanOutAsync). Con 20 dispositivos
+    /// y 200ms de demora simulada por envío, secuencial (el código viejo,
+    /// un `foreach` con `await` adentro) tardaría ~20 × 2 × 200ms = 8s —
+    /// acá se le da un margen generoso (2s) que igual queda muy por debajo
+    /// de eso, así que si algún día alguien vuelve a hacerlo secuencial,
+    /// este test lo detecta por tiempo, no solo por resultado.</summary>
+    [Fact]
+    public async Task FanOutAsync_SendsToManyDevices_InParallel()
+    {
+        await using var db = InMemoryDb.New();
+        var (institution, _) = await SeedInstitutionsAsync(db);
+
+        const int deviceCount = 20;
+        var firefighters = Enumerable.Range(0, deviceCount)
+            .Select(i => new Firefighter { Name = $"F{i}", Username = $"f{i}", InstitutionId = institution.Id })
+            .ToList();
+        db.Firefighters.AddRange(firefighters);
+        await db.SaveChangesAsync();
+
+        db.DeviceTokens.AddRange(firefighters.Select(f =>
+            new DeviceToken { FcmToken = $"token-{f.Username}", FirefighterId = f.Id }));
+        await db.SaveChangesAsync();
+
+        var fakeFcm = new FakeFcmSender { SendDelay = TimeSpan.FromMilliseconds(200) };
+        var service = BuildService(db, fakeFcm);
+        var request = new CreateAlertRequestDto(
+            Guid.NewGuid(), "Incendio", "msg", null, null, null,
+            firefighters.Select(f => f.Id).ToArray());
+
+        var stopwatch = Stopwatch.StartNew();
+        var result = await service.CreateAsync(institution.Id, request);
+        stopwatch.Stop();
+
+        Assert.Equal(deviceCount, result.DevicesNotified);
+        Assert.Equal(deviceCount, fakeFcm.Calls.Count);
+        Assert.Equal(deviceCount, fakeFcm.FallbackCalls.Count);
+        Assert.True(
+            stopwatch.Elapsed < TimeSpan.FromSeconds(2),
+            $"FanOutAsync tardó {stopwatch.Elapsed.TotalMilliseconds}ms para {deviceCount} dispositivos — " +
+            "esperable en paralelo (~400ms), sospechoso de secuencial (~8000ms).");
     }
 
     [Fact]

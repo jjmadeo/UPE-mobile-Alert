@@ -56,7 +56,10 @@ de correlación se resuelve como una repetición idempotente. El envío se
 reintenta automáticamente hasta la primera respuesta o el máximo de
 reintentos configurado.
 
-Por cada dispositivo se mandan dos push en paralelo (ver
+El envío a todos los dispositivos targeteados sale en paralelo, no uno
+atrás del otro — importa para instituciones grandes, donde mandar
+secuencial podría sumar varios segundos hasta que responda `POST
+/api/alerts`. Por cada dispositivo se mandan además dos push (ver
 `AlertService.FanOutAsync`): uno data-only, que dispara la pantalla
 completa del lado de la app, y uno de respaldo con `notification` nativo,
 que el sistema operativo del teléfono entrega igual aunque el fabricante

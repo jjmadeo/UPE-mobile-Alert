@@ -15,6 +15,14 @@ public class FakeFcmSender : IFcmSender
     private readonly List<Call> _fallbackCalls = [];
     private readonly object _lock = new();
 
+    /// <summary>Demora artificial antes de "responder" cada envío — sirve
+    /// para simular la latencia real de pegarle a Firebase y así poder
+    /// probar que AlertService.FanOutAsync manda en paralelo entre
+    /// dispositivos, no uno atrás del otro (ver
+    /// AlertServiceTests.FanOutAsync_SendsToManyDevices_InParallel).
+    /// Cero por defecto: no afecta a ningún otro test.</summary>
+    public TimeSpan SendDelay { get; set; } = TimeSpan.Zero;
+
     public IReadOnlyList<Call> Calls
     {
         get { lock (_lock) { return _calls.ToList(); } }
@@ -29,22 +37,30 @@ public class FakeFcmSender : IFcmSender
         get { lock (_lock) { return _fallbackCalls.ToList(); } }
     }
 
-    public Task<bool> SendAsync(string fcmToken, Dictionary<string, string> data, CancellationToken ct = default)
+    public async Task<bool> SendAsync(string fcmToken, Dictionary<string, string> data, CancellationToken ct = default)
     {
+        if (SendDelay > TimeSpan.Zero)
+        {
+            await Task.Delay(SendDelay, ct);
+        }
         lock (_lock)
         {
             _calls.Add(new Call(fcmToken, data));
         }
-        return Task.FromResult(true);
+        return true;
     }
 
-    public Task<bool> SendFallbackNotificationAsync(
+    public async Task<bool> SendFallbackNotificationAsync(
         string fcmToken, string title, string body, Dictionary<string, string> data, CancellationToken ct = default)
     {
+        if (SendDelay > TimeSpan.Zero)
+        {
+            await Task.Delay(SendDelay, ct);
+        }
         lock (_lock)
         {
             _fallbackCalls.Add(new Call(fcmToken, data));
         }
-        return Task.FromResult(true);
+        return true;
     }
 }

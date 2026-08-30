@@ -132,24 +132,35 @@ public class AlertService(AppDbContext db, IFcmSender fcm, WebhookNotifier webho
             ["createdAt"] = alert.CreatedAt.ToString("o"),
         };
 
-        var sent = 0;
-        foreach (var token in tokens)
+        // En paralelo entre dispositivos, no secuencial — con un cuartel
+        // grande (decenas/cientos de bomberos targeteados en una sola
+        // alerta), mandar un token atrás del otro puede sumar varios
+        // segundos hasta que POST /api/alerts responda. Cada request a
+        // Firebase es independiente (no toca `db`, que no es thread-safe),
+        // así que no hay problema en dispararlas todas juntas. Dentro de un
+        // mismo token, el respaldo sigue yendo después del principal, no
+        // hace falta paralelizar eso también — el ahorro real está en no
+        // esperar token por token.
+        var sendTasks = tokens.Select(async token =>
         {
-            if (await fcm.SendAsync(token, data, ct))
-            {
-                sent++;
-            }
+            var primarySent = await fcm.SendAsync(token, data, ct);
 
-            // Red de contención en paralelo, no reemplazo (ver
-            // FcmSender.SendFallbackNotificationAsync): en fabricantes que
-            // matan el proceso antes de que el handler de background llegue
-            // a correr, esto igual le suena/vibra/aparece al bombero. No
-            // suma a `sent`/devicesNotified — ese número sigue siendo el
-            // contrato documentado en INTEGRATION.md (éxito del push
-            // principal, que es el que dispara la pantalla completa).
+            // Red de contención en paralelo con el envío del principal (no
+            // reemplazo — ver FcmSender.SendFallbackNotificationAsync): en
+            // fabricantes que matan el proceso antes de que el handler de
+            // background llegue a correr, esto igual le suena/vibra/aparece
+            // al bombero. No suma a `sent`/devicesNotified — ese número
+            // sigue siendo el contrato documentado en INTEGRATION.md (éxito
+            // del push principal, que es el que dispara la pantalla
+            // completa).
             var fallbackData = new Dictionary<string, string>(data) { ["kind"] = "fallback" };
             await fcm.SendFallbackNotificationAsync(token, $"🚨 {alert.Title}", alert.Message, fallbackData, ct);
-        }
+
+            return primarySent;
+        });
+
+        var results = await Task.WhenAll(sendTasks);
+        var sent = results.Count(ok => ok);
 
         logger.LogInformation(
             "Alerta {AlertId} ({Title}): {Sent}/{Total} pushes enviados",
